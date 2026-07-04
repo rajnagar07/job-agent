@@ -1,6 +1,17 @@
+import requests
+
+
+URL = "https://wellfound.com/jobs"
+
+
 def get_jobs():
     """
-    Placeholder for Wellfound jobs.
-    We'll implement this in the next session.
+    Placeholder implementation.
+    We'll replace this with a real parser later.
     """
-    return []
+
+    print("Collecting jobs from Wellfound...")
+
+    jobs = []
+
+    return jobs

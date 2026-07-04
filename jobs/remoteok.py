@@ -1,7 +1,7 @@
 import requests
+from config import REMOTE_OK_URL
 
-URL = "https://remoteok.com/api"
-
+URL = REMOTE_OK_URL
 headers = {
     "User-Agent": "Mozilla/5.0"
 }

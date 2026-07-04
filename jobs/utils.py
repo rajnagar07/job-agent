@@ -1,18 +1,9 @@
 import re
+from config import KEYWORDS
 
 PATTERNS = [
-    r"\bpython\b",
-    r"\bbackend\b",
-    r"\bsoftware engineer\b",
-    r"\bsoftware developer\b",
-    r"\bassociate software engineer\b",
-    r"\bai engineer\b",
-    r"\bgenai\b",
-    r"\bllm\b",
-    r"\brag\b",
-    r"\bflask\b",
-    r"\bfastapi\b",
-    r"\bdjango\b",
+    rf"\b{re.escape(keyword)}\b"
+    for keyword in KEYWORDS
 ]
 
 def filter_jobs(jobs):
