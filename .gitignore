@@ -1,18 +1,24 @@
 # Virtual Environment
+ven/
 venv/
-.venv/
-env/
 
-# Python caching
+# Python
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 
-# Environment variables / Secrets
+# Environment Variables
 .env
-.env.secret
 
-# IDEs and editors
+# Database
+jobs.db
+
+# VS Code
 .vscode/
-.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
