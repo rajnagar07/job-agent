@@ -24,16 +24,38 @@ def index():
         jobs = session.query(Job).all()
 
     total_jobs = len(jobs)
+    companies = len(set(job.company for job in jobs))
+
+    sources = len(set(job.source for job in jobs))
 
     session.close()
 
     return render_template(
         "index.html",
         jobs=jobs,
-        total_jobs=total_jobs
+        total_jobs=total_jobs,
+        companies=companies,
+        sources=sources,
+        search=search
 )
 
 
+@app.route("/job/<int:job_id>")
+def job_details(job_id):
+
+    session = SessionLocal()
+
+    job = session.query(Job).filter(Job.id == job_id).first()
+
+    session.close()
+
+    if not job:
+        return "Job Not Found", 404
+
+    return render_template(
+        "job_details.html",
+        job=job
+    )
 
 
 if __name__ == "__main__":

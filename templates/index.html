@@ -11,116 +11,182 @@
 
 <body class="bg-light">
 
-    <div class="container py-5">
+<div class="container py-5">
 
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Header -->
 
-            <div>
-                <h2>🤖 AI Job Agent</h2>
-                <p class="text-muted">Daily Software Engineering Jobs</p>
-            </div>
+    <div class="text-center mb-5">
 
-            <div>
-                <h4 class="badge bg-success fs-6">
-                    Total Jobs : {{ total_jobs }}
-                </h4>
+        <h1>🤖 AI Job Agent</h1>
+        <p class="text-muted">
+            Find Software Engineering & AI Jobs
+        </p>
+
+    </div>
+
+    <!-- Dashboard Cards -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card text-white bg-primary shadow">
+
+                <div class="card-body text-center">
+
+                    <h3>{{ total_jobs }}</h3>
+
+                    <p class="mb-0">Total Jobs</p>
+
+                </div>
+
             </div>
 
         </div>
 
-        <!-- Job Table -->
+        <div class="col-md-4">
 
-        <div class="card shadow">
+            <div class="card text-white bg-success shadow">
 
-            <div class="card-body">
+                <div class="card-body text-center">
 
-                {% if jobs %}
+                    <h3>{{ companies }}</h3>
 
-                <table class="table table-hover align-middle">
-
-                    <thead class="table-dark">
-
-                        <tr>
-
-                            <th>Company</th>
-                            <th>Position</th>
-                            <th>Location</th>
-                            <th>Source</th>
-                            <th>Action</th>
-
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {% for job in jobs %}
-
-                        <tr>
-
-                            <td>
-                                <strong>{{ job.company }}</strong>
-                            </td>
-
-                            <td>
-                                <a href="{{ job.url }}" target="_blank" class="fw-semibold text-decoration-none">
-                                    {{ job.title }}
-                                </a>
-                            </td>
-
-                            <td>
-                                {{ job.location if job.location else "Remote / Not Specified" }}
-                            </td>
-
-                            <td class="text-center">
-                                <span class="badge bg-primary">
-                                    {{ job.source }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <a href="{{ job.url }}" target="_blank" class="btn btn-success btn-sm">
-                                    Apply
-                                </a>
-                            </td>
-
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-                <form method="GET" class="mb-4">
-
-                    <div class="input-group">
-
-                        <input type="text" class="form-control" placeholder="Search by Job Title..." name="search"
-                            value="{{ search }}">
-
-                        <button class="btn btn-primary">
-                            Search
-                        </button>
-
-                    </div>
-
-                </form>
-                {% else %}
-
-                <div class="alert alert-warning">
-
-                    No jobs found.
+                    <p class="mb-0">Companies</p>
 
                 </div>
 
-                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card text-white bg-dark shadow">
+
+                <div class="card-body text-center">
+
+                    <h3>{{ sources }}</h3>
+
+                    <p class="mb-0">Sources</p>
+
+                </div>
 
             </div>
 
         </div>
 
     </div>
+
+    <!-- Search -->
+
+    <form method="GET" class="mb-5">
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                class="form-control"
+                placeholder="Search jobs..."
+                name="search"
+                value="{{ search }}">
+
+            <button class="btn btn-primary">
+
+                Search
+
+            </button>
+
+        </div>
+
+    </form>
+
+    <!-- Job Cards -->
+
+    <div class="row">
+
+    {% if jobs %}
+
+        {% for job in jobs %}
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+
+                        {{ job.title }}
+
+                    </h5>
+
+                    <h6 class="text-muted">
+
+                        {{ job.company }}
+
+                    </h6>
+
+                    <p>
+
+                        📍 {{ job.location if job.location else "Remote / Not Specified" }}
+
+                    </p>
+
+                    <span class="badge bg-primary">
+
+                        {{ job.source }}
+
+                    </span>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <a
+                        href="/job/{{ job.id }}"
+                        class="btn btn-outline-primary">
+
+                        View Details
+
+                        </a>
+                        
+                        <a
+                            href="{{ job.url }}"
+                            target="_blank"
+                            class="btn btn-success">
+
+                            Apply
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="col-12">
+
+            <div class="alert alert-warning">
+
+                No jobs found.
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+    </div>
+
+</div>
 
 </body>
 
