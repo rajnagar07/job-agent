@@ -17,6 +17,9 @@ __pycache__/
 # Uploaded Files
 uploads/
 
+uploads/*
+!uploads/.gitkeep
+
 # IDE
 .vscode/
 .idea/
