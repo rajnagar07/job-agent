@@ -1,24 +1,29 @@
 # Virtual Environment
 ven/
-venv/
+.venv/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 
 # Environment Variables
 .env
 
 # Database
-jobs.db
+*.db
+*.sqlite3
 
-# VS Code
+# Uploaded Files
+uploads/
+
+# IDE
 .vscode/
+.idea/
 
-# macOS
+# OS Files
 .DS_Store
+Thumbs.db
 
 # Logs
-logs/
 *.log
