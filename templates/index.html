@@ -11,154 +11,80 @@
 
 <body class="bg-light">
 
-<div class="container py-5">
+    <div class="container py-5">
 
-    <!-- Header -->
+        <!-- Header -->
 
-    <div class="text-center mb-5">
+        <div class="text-center mb-5">
 
-        <h1>🤖 AI Job Agent</h1>
-        <p class="text-muted">
-            Find Software Engineering & AI Jobs
-        </p>
-
-    </div>
-
-    <!-- Dashboard Cards -->
-
-    <div class="row mb-4">
-
-        <div class="col-md-4">
-
-            <div class="card text-white bg-primary shadow">
-
-                <div class="card-body text-center">
-
-                    <h3>{{ total_jobs }}</h3>
-
-                    <p class="mb-0">Total Jobs</p>
-
-                </div>
-
-            </div>
+            <h1>🤖 AI Job Agent</h1>
+            <p class="text-muted">
+                Find Software Engineering & AI Jobs
+            </p>
 
         </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
 
-        <div class="col-md-4">
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
 
-            <div class="card text-white bg-success shadow">
+            {{ message }}
 
-                <div class="card-body text-center">
-
-                    <h3>{{ companies }}</h3>
-
-                    <p class="mb-0">Companies</p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-4">
-
-            <div class="card text-white bg-dark shadow">
-
-                <div class="card-body text-center">
-
-                    <h3>{{ sources }}</h3>
-
-                    <p class="mb-0">Sources</p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Search -->
-
-    <form method="GET" class="mb-5">
-
-        <div class="input-group">
-
-            <input
-                type="text"
-                class="form-control"
-                placeholder="Search jobs..."
-                name="search"
-                value="{{ search }}">
-
-            <button class="btn btn-primary">
-
-                Search
-
+            <button type="button" class="btn-close" data-bs-dismiss="alert">
             </button>
 
         </div>
 
-    </form>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-    <!-- Job Cards -->
+        <!-- Dashboard Cards -->
 
-    <div class="row">
+        <div class="row mb-4">
 
-    {% if jobs %}
+            <div class="col-md-4">
 
-        {% for job in jobs %}
+                <div class="card text-white bg-primary shadow">
 
-        <div class="col-lg-6 mb-4">
+                    <div class="card-body text-center">
 
-            <div class="card shadow-sm h-100">
+                        <h3>{{ total_jobs }}</h3>
 
-                <div class="card-body">
+                        <p class="mb-0">Total Jobs</p>
 
-                    <h5 class="card-title">
+                    </div>
 
-                        {{ job.title }}
+                </div>
 
-                    </h5>
+            </div>
 
-                    <h6 class="text-muted">
+            <div class="col-md-4">
 
-                        {{ job.company }}
+                <div class="card text-white bg-success shadow">
 
-                    </h6>
+                    <div class="card-body text-center">
 
-                    <p>
+                        <h3>{{ companies }}</h3>
 
-                        📍 {{ job.location if job.location else "Remote / Not Specified" }}
+                        <p class="mb-0">Companies</p>
 
-                    </p>
+                    </div>
 
-                    <span class="badge bg-primary">
+                </div>
 
-                        {{ job.source }}
+            </div>
 
-                    </span>
+            <div class="col-md-4">
 
-                    <hr>
+                <div class="card text-white bg-dark shadow">
 
-                    <div class="d-flex justify-content-between">
+                    <div class="card-body text-center">
 
-                        <a
-                        href="/job/{{ job.id }}"
-                        class="btn btn-outline-primary">
+                        <h3>{{ sources }}</h3>
 
-                        View Details
-
-                        </a>
-                        
-                        <a
-                            href="{{ job.url }}"
-                            target="_blank"
-                            class="btn btn-success">
-
-                            Apply
-
-                        </a>
+                        <p class="mb-0">Sources</p>
 
                     </div>
 
@@ -168,26 +94,106 @@
 
         </div>
 
-        {% endfor %}
+        <!-- Search -->
 
-    {% else %}
+        <form method="GET" class="mb-5">
 
-        <div class="col-12">
+            <div class="input-group">
 
-            <div class="alert alert-warning">
+                <input type="text" class="form-control" placeholder="Search jobs..." name="search" value="{{ search }}">
 
-                No jobs found.
+                <button class="btn btn-primary">
+
+                    Search
+
+                </button>
 
             </div>
 
+        </form>
+
+        <!-- Job Cards -->
+
+        <div class="row">
+
+            {% if jobs %}
+
+            {% for job in jobs %}
+
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="card-title">
+
+                            {{ job.title }}
+
+                        </h5>
+
+                        <h6 class="text-muted">
+
+                            {{ job.company }}
+
+                        </h6>
+
+                        <p>
+
+                            📍 {{ job.location if job.location else "Remote / Not Specified" }}
+
+                        </p>
+
+                        <span class="badge bg-primary">
+
+                            {{ job.source }}
+
+                        </span>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+
+                            <a href="/job/{{ job.id }}" class="btn btn-outline-primary">
+
+                                View Details
+
+                            </a>
+<a href="{{ url_for('upload_resume', job_id=job.id) }}"
+   class="btn btn-primary">
+    Analyze Resume
+</a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+            {% else %}
+
+            <div class="col-12">
+
+                <div class="alert alert-warning">
+
+                    No jobs found.
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
         </div>
 
-    {% endif %}
-
     </div>
-
-</div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
+
+

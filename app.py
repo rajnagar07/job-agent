@@ -21,3 +21,20 @@ for job in jobs:
 save_jobs(jobs)
 
 print("Jobs Saved Successfully")
+
+
+#### this one for just testing 
+# from jobs.remoteok import get_jobs as remote_jobs
+# from jobs.wellfound import get_jobs as wellfound_jobs
+
+# remote = remote_jobs()
+# wellfound = wellfound_jobs()
+
+# print("RemoteOK:", len(remote))
+# print("Wellfound:", len(wellfound))
+
+# jobs = remote + wellfound
+
+
+# print("Total:", len(jobs))
+

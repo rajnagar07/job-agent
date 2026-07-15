@@ -11,18 +11,25 @@ def save_jobs(jobs):
 
         if exists:
             continue
+        # new_job = Job(
+        #     company=job.get("company"),
+        #     title=job.get("position"),
+        #     location=job.get("location"),
+        #     salary=str(job.get("salary")),
+        #     url=job.get("url"),
+        #     description=job.get("description", ""),
+        #     source=job.get("source", "RemoteOK"),
+        #     status="New",
+        #     match_score=0
+        # )
         new_job = Job(
-            company=job.get("company"),
-            title=job.get("position"),
-            location=job.get("location"),
-            salary=str(job.get("salary")),
-            url=job.get("url"),
-            description=job.get("description", ""),
-            source=job.get("source", "RemoteOK"),
-            status="New",
-            match_score=0
-        )
-
+        company=job["company"],
+        title=job["position"],
+        description=job.get("description", ""),
+        location=job["location"],
+        salary=str(job["salary"]),
+        url=job["url"]
+    )
         session.add(new_job)
 
     session.commit()

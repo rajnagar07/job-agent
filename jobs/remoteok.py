@@ -22,6 +22,7 @@ def get_jobs():
         jobs.append({
             "company": job.get("company"),
             "position": job.get("position"),
+            "description": job.get("description"),
             "location": job.get("location"),
             "salary": job.get("salary_min"),
             "url": job.get("url")
