@@ -135,6 +135,20 @@ def upload_resume(job_id):
         "upload_resume.html",
         job=job
     )
+    
+
+@app.route("/match/<int:job_id>")
+def match(job_id):
+
+    session = SessionLocal()
+
+    job = session.query(Job).filter(Job.id == job_id).first()
+
+    if not job:
+        flash("Job not found.", "danger")
+        return redirect(url_for("index"))
+
+    return f"Selected Job: {job.title}"
 # ===========================
 # Run Application
 # ===========================
@@ -142,3 +156,8 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 # print("Secret Key:", app.secret_key)
+
+
+
+
+

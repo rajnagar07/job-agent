@@ -20,3 +20,54 @@ Resume:
 
 {resume}
 """)
+
+
+job_skill_prompt = ChatPromptTemplate.from_template("""
+You are an expert technical recruiter.
+
+Analyze the following job description.
+
+Extract ONLY the technical skills.
+
+Return ONLY valid JSON.
+
+Format:
+
+{
+    "skills":[]
+}
+
+Job Description:
+
+{job}
+""")
+
+match_prompt = ChatPromptTemplate.from_template("""
+You are an expert technical recruiter.
+
+Compare the following resume and job description.
+
+Evaluate:
+- Technical skill match
+- Relevant experience
+- Missing skills
+- Overall suitability
+
+Return ONLY valid JSON.
+
+Format:
+
+{{
+  "match_score": 0,
+  "matched_skills": [],
+  "missing_skills": [],
+  "strengths": [],
+  "recommendation": ""
+}}
+
+Resume:
+{resume}
+
+Job Description:
+{job}
+""")

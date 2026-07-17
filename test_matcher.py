@@ -1,23 +1,30 @@
-from ai.matcher import calculate_match_score
+from ai.matcher import match_resume_with_ai
 
-resume_skills = [
-    "Python",
-    "Flask",
-    "Git",
-    "SQL"
-]
+resume = """
+Python Developer
 
-job_skills = [
-    "Python",
-    "FastAPI",
-    "Docker",
-    "Git",
-    "SQL"
-]
+Skills:
+Python
+Flask
+FastAPI
+SQL
+Docker
+Git
+"""
 
-result = calculate_match_score(
-    resume_skills,
-    job_skills
-)
+job = """
+Backend Engineer
+
+Requirements:
+Python
+FastAPI
+Docker
+AWS
+SQL
+Git
+Redis
+"""
+
+result = match_resume_with_ai(resume, job)
 
 print(result)

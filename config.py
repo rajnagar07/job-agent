@@ -10,7 +10,7 @@ load_dotenv()
 # API Keys
 # =====================================
 # OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # =====================================
 # Email Configuration

@@ -1,3 +1,6 @@
-from ai.skill_extractor import extract_skills
+from ai.chatmodel import chat_model
 
-print(extract_skills("Senior AI Engineer Architect Python Flask Docker SQL"))
+response = chat_model.invoke("Say Hello")
+
+print(type(response))
+print(response)
