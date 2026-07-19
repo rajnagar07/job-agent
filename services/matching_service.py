@@ -1,29 +1,65 @@
 from services.resume_service import extract_resume_text
+from ai.matcher import match_resume_with_ai, calculate_match_score
 from ai.skill_extractor import extract_skills
 from ai.job_skill_extractor import extract_job_skills
-from ai.matcher import calculate_match_score
+import traceback
+
 
 
 def match_resume_with_job(resume_path, job):
 
-    # Resume text
     resume_text = extract_resume_text(resume_path)
 
-    # Resume skills
-    resume_skills = extract_skills(resume_text)
+    job_text = f"""
+    Job Title: {job.title}
 
-    # Job skills
-    job_skills = extract_job_skills(job)
+    Company: {job.company}
 
-    print("\nResume Skills:")
-    print(resume_skills)
+    Location: {job.location}
 
-    print("\nJob Skills:")
-    print(job_skills)
+    Experience: {job.experience}
 
-    result = calculate_match_score(
-        resume_skills,
-        job_skills
-    )
+    Salary: {job.salary}
 
-    return result
+    Description:
+    {job.description or ""}
+    """
+
+    try:
+
+        print("\n===== USING GEMINI AI =====")
+
+        result = match_resume_with_ai(
+            resume_text,
+            job_text
+        )
+
+        result["method"] = "AI"
+
+        return result
+
+    except Exception as e:
+
+        print("\n========== AI ERROR ==========")
+        traceback.print_exc()
+        print("==============================\n")
+        print("Falling back to Rule Based Matching...")
+
+        resume_skills = extract_skills(resume_text)
+        job_skills = extract_job_skills(job)
+
+        result = calculate_match_score(
+            resume_skills,
+            job_skills
+        )
+
+        result.update({
+            "strengths": [],
+            "recommendations": [],
+            "resume_summary": "",
+            "job_summary": "",
+            "verdict": "Rule Based Analysis",
+            "method": "Rule Based"
+        })
+
+        return result

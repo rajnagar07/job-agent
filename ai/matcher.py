@@ -27,7 +27,9 @@ def match_resume_with_ai(resume_text, job_description):
     chain = match_prompt | chat_model
 
     for attempt in range(3):
+
         try:
+
             response = chain.invoke({
                 "resume": resume_text,
                 "job": job_description
@@ -44,17 +46,44 @@ def match_resume_with_ai(resume_text, job_description):
 
             content = content.strip()
 
+            if content.startswith("```"):
+                content = (
+                    content.replace("```json", "")
+                    .replace("```", "")
+                    .strip()
+                )
+
             print("\n===== GEMINI RESPONSE =====")
             print(content)
             print("===========================\n")
 
-            if content.startswith("```"):
-                content = content.replace("```json", "").replace("```", "").strip()
+            result = json.loads(content)
 
-            return json.loads(content)
+            required_keys = {
+                "score",
+                "matched",
+                "missing",
+                "strengths",
+                "recommendations",
+                "resume_summary",
+                "job_summary",
+                "verdict",
+            }
+
+            missing_keys = required_keys - result.keys()
+
+            if missing_keys:
+                raise ValueError(
+                    f"Gemini response missing keys: {missing_keys}"
+                )
+
+            return result
 
         except Exception as e:
+
             print(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(5)
+
+            if attempt < 2:
+                time.sleep(5)
 
     raise Exception("Gemini API unavailable after multiple retries.")

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from services.matching_service import match_resume_with_job
 from database.db import SessionLocal
 from database.models import Job
+from utils.text_cleaner import clean_job_description
 import os
 import uuid
 
@@ -19,7 +20,11 @@ app = Flask(
     static_folder=os.path.join(BASE_DIR, "static"),
 )
 
-app.secret_key = "raj_ai_job_agent_secret"
+app.secret_key = os.getenv(
+    "FLASK_SECRET_KEY",
+    "raj_ai_job_agent_secret"
+)
+
 # ===========================
 # Upload Configuration
 # ===========================
@@ -37,29 +42,32 @@ def index():
 
     session = SessionLocal()
 
-    search = request.args.get("search", "")
+    try:
 
-    query = session.query(Job)
+        search = request.args.get("search", "")
 
-    if search:
-        query = query.filter(Job.title.ilike(f"%{search}%"))
+        query = session.query(Job)
 
-    jobs = query.all()
+        if search:
+            query = query.filter(Job.title.ilike(f"%{search}%"))
 
-    total_jobs = len(jobs)
-    companies = len(set(job.company for job in jobs))
-    sources = len(set(job.source for job in jobs))
+        jobs = query.all()
 
-    session.close()
+        total_jobs = len(jobs)
+        companies = len(set(job.company for job in jobs))
+        sources = len(set(job.source for job in jobs))
 
-    return render_template(
-        "index.html",
-        jobs=jobs,
-        total_jobs=total_jobs,
-        companies=companies,
-        sources=sources,
-        search=search,
-    )
+        return render_template(
+            "index.html",
+            jobs=jobs,
+            total_jobs=total_jobs,
+            companies=companies,
+            sources=sources,
+            search=search,
+        )
+
+    finally:
+        session.close()
 
 
 # ===========================
@@ -70,94 +78,109 @@ def job_details(job_id):
 
     session = SessionLocal()
 
-    job = session.query(Job).filter(Job.id == job_id).first()
+    try:
 
-    session.close()
+        job = session.query(Job).filter(Job.id == job_id).first()
 
-    if not job:
-        return "Job Not Found", 404
+        if not job:
+            return "Job Not Found", 404
 
-    return render_template(
-        "job_details.html",
-        job=job,
-    )
+        # Clean the description before displaying
+        cleaned_description = clean_job_description(job.description)
+
+        return render_template(
+            "job_details.html",
+            job=job,
+            cleaned_description=cleaned_description,
+        )
+    finally:
+            session.close()
 
 
 # ===========================
 # Upload Resume
 # ===========================
-# @app.route("/upload_resume", methods=["GET", "POST"])
 @app.route("/upload_resume/<int:job_id>", methods=["GET", "POST"])
 def upload_resume(job_id):
 
     session = SessionLocal()
 
-    job = session.query(Job).filter(Job.id == job_id).first()
+    try:
 
-    if not job:
-        session.close()
-        return "Job Not Found", 404
+        job = session.query(Job).filter(Job.id == job_id).first()
 
-    if request.method == "POST":
+        if not job:
+            return "Job Not Found", 404
 
-        file = request.files.get("resume")
+        cleaned_description = clean_job_description(job.description)
 
-        if file and file.filename and file.filename.lower().endswith(".pdf"):
+        if request.method == "POST":
+
+            file = request.files.get("resume")
+
+            if not file or not file.filename:
+                flash("Please select a PDF file.", "warning")
+                return redirect(url_for("upload_resume", job_id=job_id))
+
+            if not file.filename.lower().endswith(".pdf"):
+                flash("Only PDF files are allowed.", "danger")
+                return redirect(url_for("upload_resume", job_id=job_id))
 
             filename = f"{uuid.uuid4()}.pdf"
-
-            filepath = os.path.join(
-                UPLOAD_FOLDER,
-                filename
-            )
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
 
             file.save(filepath)
 
-            result = match_resume_with_job(filepath, job)
+            try:
 
-            session.close()
+                result = match_resume_with_job(
+                    filepath,
+                    job
+                )
 
-            return render_template(
-                "match_result.html",
-                job=job,
-                result=result
+                job.match_score = result["score"]
+
+                session.commit()
+
+                return render_template(
+                    "match_result.html",
+                    job=job,
+                    result=result
+                )
+
+            finally:
+
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+
+        return render_template(
+            "upload_resume.html",
+            job=job,
+            cleaned_description=cleaned_description
+        )
+
+    except Exception as e:
+
+        session.rollback()
+
+        flash(
+            f"Resume analysis failed: {str(e)}",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "upload_resume",
+                job_id=job_id
             )
+        )
 
-        flash("Please upload a valid PDF file.", "danger")
-
+    finally:
         session.close()
 
-        return redirect(url_for("upload_resume", job_id=job_id))
 
-    session.close()
-
-    return render_template(
-        "upload_resume.html",
-        job=job
-    )
-    
-
-@app.route("/match/<int:job_id>")
-def match(job_id):
-
-    session = SessionLocal()
-
-    job = session.query(Job).filter(Job.id == job_id).first()
-
-    if not job:
-        flash("Job not found.", "danger")
-        return redirect(url_for("index"))
-
-    return f"Selected Job: {job.title}"
 # ===========================
 # Run Application
 # ===========================
 if __name__ == "__main__":
     app.run(debug=True)
-
-# print("Secret Key:", app.secret_key)
-
-
-
-
-
