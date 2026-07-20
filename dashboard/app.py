@@ -3,9 +3,27 @@ from services.matching_service import match_resume_with_job
 from database.db import SessionLocal
 from database.models import Job
 from utils.text_cleaner import clean_job_description
+import services.resume_service as resume_service
 import os
 import uuid
+from werkzeug.utils import secure_filename
+from ai.resume_analyzer import analyze_resume_with_ai
 
+
+def extract_text_from_pdf(filepath):
+    # Support multiple possible function names in services.resume_service
+    candidates = [
+        "extract_text_from_pdf",
+        "extract_resume_text",
+        "extract_text_from_resume",
+        "extract_text",
+        "extract_resume",
+    ]
+    for name in candidates:
+        func = getattr(resume_service, name, None)
+        if callable(func):
+            return func(filepath)
+    raise AttributeError("No supported PDF text extraction function found in services.resume_service")
 # ===========================
 # Base Directory
 # ===========================
@@ -33,11 +51,16 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# entry point
+@app.route("/")
+def landing():
+    return render_template("landing.html")
+
 
 # ===========================
 # Dashboard
 # ===========================
-@app.route("/")
+@app.route("/jobs")
 def index():
 
     session = SessionLocal()
@@ -178,7 +201,78 @@ def upload_resume(job_id):
     finally:
         session.close()
 
+@app.route("/resume-analysis", methods=["GET", "POST"])
+def resume_analysis():
 
+    if request.method == "POST":
+
+        # -----------------------------
+        # Validate Upload
+        # -----------------------------
+        if "resume" not in request.files:
+            flash("Please upload a resume.", "danger")
+            return redirect(request.url)
+
+        file = request.files["resume"]
+
+        if file.filename == "":
+            flash("Please select a PDF file.", "warning")
+            return redirect(request.url)
+
+        if not file.filename.lower().endswith(".pdf"):
+            flash("Only PDF files are allowed.", "danger")
+            return redirect(request.url)
+
+        try:
+
+            # -----------------------------
+            # Save PDF
+            # -----------------------------
+            filename = f"{uuid.uuid4()}.pdf"
+
+            filepath = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
+            file.save(filepath)
+
+            # -----------------------------
+            # Extract Resume Text
+            # -----------------------------
+            resume_text = extract_text_from_pdf(filepath)
+
+            if not resume_text.strip():
+
+                flash("Unable to read the uploaded resume.", "danger")
+                return redirect(request.url)
+
+            # -----------------------------
+            # AI Resume Analysis
+            # -----------------------------
+
+            # Replace this with your Gemini function
+
+            analysis = analyze_resume_with_ai(resume_text)
+
+            # Example:
+            #
+            # analysis = analyze_resume_with_ai(resume_text)
+
+            return render_template(
+                "resume_result.html",
+                analysis=analysis
+            )
+
+        except Exception as e:
+
+            print(e)
+
+            flash("Something went wrong while analyzing the resume.", "danger")
+
+            return redirect(request.url)
+
+    return render_template("resume_analysis.html")
 # ===========================
 # Run Application
 # ===========================

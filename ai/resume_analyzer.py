@@ -1,38 +1,102 @@
 # import json
 
 # from ai.chatmodel import chat_model
-# from ai.prompts import resume_skill_prompt
+# from ai.prompts import resume_analysis_prompt
 
 
-# def analyze_resume(resume_text):
+# def analyze_resume_with_ai(resume_text):
 
-#     chain = resume_skill_prompt | chat_model
+#     try:
 
-#     response = chain.invoke({
-#         "resume": resume_text
-#     })
+#         chain = resume_analysis_prompt | chat_model
 
-#     content = response.content.strip()
+#         response = chain.invoke({
+#             "resume": resume_text
+#         })
 
-#     # Remove markdown if Gemini returns ```json ... ```
-#     content = content.replace("```json", "").replace("```", "").strip()
+#         if isinstance(response.content, list):
+#             content = response.content[0]["text"]
+#         else:
+#             content = response.content
 
-#     data = json.loads(content)
+#         content = content.strip()
+#         # Remove ```json ... ```
+#         content = (
+#             content.replace("```json", "")
+#                    .replace("```", "")
+#                    .strip()
+#         )
 
-#     return data["skills"]
+#         return json.loads(content)
 
+#     except Exception as e:
+#         print(type(response))
+#         print(type(response.content))
+#         print(response.content)
+
+#         return {
+#             "ats_score": 0,
+#             "resume_score": 0,
+#             "verdict": "Analysis Failed",
+#             "summary": "Unable to analyze resume.",
+#             "skills": [],
+#             "strengths": [],
+#             "weaknesses": [str(e)],
+#             "recommendations": [],
+#             "recommended_roles": []
+#         }
+
+import json
 
 from ai.chatmodel import chat_model
-from ai.prompts import resume_skill_prompt
+from ai.prompts import resume_analysis_prompt
 
 
-def analyze_resume(resume_text):
+def analyze_resume_with_ai(resume_text):
 
-    chain = resume_skill_prompt | chat_model
+    try:
 
-    response = chain.invoke({
-        "resume": resume_text
-    })
+        chain = resume_analysis_prompt | chat_model
 
-    print(type(response))
-    print(response)
+        response = chain.invoke({
+            "resume": resume_text
+        })
+
+        if isinstance(response.content, list):
+
+            content = ""
+
+            for block in response.content:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    content += block["text"]
+
+        else:
+
+            content = response.content
+
+        content = (
+            content.replace("```json", "")
+                   .replace("```", "")
+                   .strip()
+        )
+
+        return json.loads(content)
+
+    except Exception as e:
+
+        # print("=" * 60)
+        # print("RESUME ANALYZER ERROR")
+        # print(e)
+        # print("=" * 60)
+
+        return {
+            "ats_score": 0,
+            "resume_score": 0,
+            "verdict": "Analysis Failed",
+            "summary": "Unable to analyze resume.",
+            "skills": [],
+            "strengths": [],
+            "weaknesses": [str(e)],
+            "recommendations": [],
+            "recommended_roles": []
+        }
