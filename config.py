@@ -73,3 +73,15 @@ KEYWORDS = [
     "rest api",
     "microservices",
 ]
+
+#comapny list
+GREENHOUSE_COMPANIES = [
+    "stripe",
+    "openai",
+    "notion",
+    "datadog",
+    "coinbase",
+    "canva",
+    "rippling",
+    "figma"
+]

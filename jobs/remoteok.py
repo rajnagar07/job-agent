@@ -2,11 +2,26 @@ import requests
 from config import REMOTE_OK_URL
 
 URL = REMOTE_OK_URL
+
 headers = {
     "User-Agent": "Mozilla/5.0"
 }
 
+
+def normalize_job(job):
+    return {
+        "title": job.get("position"),
+        "company": job.get("company"),
+        "location": job.get("location"),
+        "description": job.get("description"),
+        "salary": job.get("salary_min"),
+        "url": job.get("url"),
+        "source": "RemoteOK"
+    }
+
+
 def get_jobs():
+
     response = requests.get(URL, headers=headers)
 
     if response.status_code != 200:
@@ -17,15 +32,8 @@ def get_jobs():
 
     jobs = []
 
-    # Skip the metadata element
+    # Skip metadata
     for job in data[1:]:
-        jobs.append({
-            "company": job.get("company"),
-            "position": job.get("position"),
-            "description": job.get("description"),
-            "location": job.get("location"),
-            "salary": job.get("salary_min"),
-            "url": job.get("url")
-        })
+        jobs.append(normalize_job(job))
 
     return jobs

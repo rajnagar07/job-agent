@@ -1,6 +1,7 @@
-from ai.chatmodel import chat_model
+from services.job_service import collect_jobs
+jobs = collect_jobs()
 
-response = chat_model.invoke("Say Hello")
+print(len(jobs))
 
-print(type(response))
-print(response)
+for job in jobs:
+    print(job["title"])
