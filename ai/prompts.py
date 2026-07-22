@@ -94,3 +94,25 @@ Resume:
 
 {resume}
 """)
+
+
+job_match_prompt = ChatPromptTemplate.from_template("""
+You are an expert technical recruiter.
+
+Compare the resume with the job description.
+
+Resume:
+{resume}
+
+Job Description:
+{job}
+
+Return ONLY JSON.
+
+{{
+    "match_score": 0,
+    "matching_skills": [],
+    "missing_skills": [],
+    "recommendation": ""
+}}
+""")

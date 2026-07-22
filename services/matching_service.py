@@ -2,6 +2,9 @@ from services.resume_service import extract_resume_text
 from ai.matcher import match_resume_with_ai, calculate_match_score
 from ai.skill_extractor import extract_skills
 from ai.job_skill_extractor import extract_job_skills
+from database.db import SessionLocal
+from database.models import Job
+# from services.matching_service import match_resume_with_job
 import traceback
 
 
@@ -63,3 +66,61 @@ def match_resume_with_job(resume_path, job):
         })
 
         return result
+    
+def match_resume_with_all_jobs(resume_path):
+    session = SessionLocal()
+
+    jobs = session.query(Job).all()
+
+    for job in jobs:
+        result = match_resume_with_job(resume_path, job)
+
+        job.match_score = result["score"]
+
+    session.commit()
+    session.close()
+    
+def fast_match_resume_with_job(
+    resume_skills,
+    job
+):
+
+    job_skills = extract_job_skills(job)
+
+    result = calculate_match_score(
+        resume_skills,
+        job_skills
+    )
+
+    result["method"] = "Rule Based"
+
+    return result
+
+def ai_match_resume_with_job(
+    resume_text,
+    job
+):
+
+    job_text = f"""
+Job Title: {job.title}
+
+Company: {job.company}
+
+Location: {job.location}
+
+Experience: {job.experience}
+
+Salary: {job.salary}
+
+Description:
+{job.description or ""}
+"""
+
+    result = match_resume_with_ai(
+        resume_text,
+        job_text
+    )
+
+    result["method"] = "AI"
+
+    return result

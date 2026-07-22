@@ -7,11 +7,7 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 from ai.resume_analyzer import analyze_resume_with_ai
-from services.matching_service import (
-    match_resume_with_job,
-    fast_match_resume_with_job,
-    ai_match_resume_with_job,
-)
+from services.matching_service import (match_resume_with_job,fast_match_resume_with_job)
 from ai.skill_extractor import extract_skills
 
 def extract_text_from_pdf(filepath):
@@ -328,7 +324,7 @@ def recommend_jobs():
         )
 
         file.save(filepath)
-
+        
         resume_text = extract_text_from_pdf(filepath)
 
         resume_skills = extract_skills(
@@ -370,14 +366,12 @@ def recommend_jobs():
 
         # ----------------------------------
         # Gemini Analysis (Top 20 Only)
-        # resume_text was already extracted once above —
-        # reuse it instead of re-reading the PDF per job.
         # ----------------------------------
 
         for item in recommendations:
 
-            ai_result = ai_match_resume_with_job(
-                resume_text,
+            ai_result = match_resume_with_job(
+                filepath,
                 item["job"]
             )
 

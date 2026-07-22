@@ -87,3 +87,4 @@ def match_resume_with_ai(resume_text, job_description):
                 time.sleep(5)
 
     raise Exception("Gemini API unavailable after multiple retries.")
+
