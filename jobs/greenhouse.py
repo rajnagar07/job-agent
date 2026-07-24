@@ -1,13 +1,19 @@
 import requests
-
 import re
 from html import unescape
 
 BASE_URL = "https://boards-api.greenhouse.io/v1/boards"
 
+# Only verified working boards
+GREENHOUSE_BOARDS = [
+    "stripe",
+    "datadog",
+    "coinbase",
+    "figma",
+]
 
 
-def normalize_job(job, company):
+def normalize_job(job):
     return {
         "title": job.get("title"),
         "company": job.get("company_name"),
@@ -20,6 +26,7 @@ def normalize_job(job, company):
         "source": "Greenhouse",
     }
 
+
 def clean_html(html):
     if not html:
         return ""
@@ -31,11 +38,8 @@ def clean_html(html):
     return text.strip()
 
 
-def get_job_details(company: str, job_id: int) -> dict:
-    """
-    Fetch complete details of a Greenhouse job.
-    """
-    url = f"{BASE_URL}/{company}/jobs/{job_id}"
+def get_job_details(board: str, job_id: int):
+    url = f"{BASE_URL}/{board}/jobs/{job_id}"
 
     response = requests.get(url, timeout=15)
     response.raise_for_status()
@@ -43,23 +47,37 @@ def get_job_details(company: str, job_id: int) -> dict:
     return response.json()
 
 
-
-def get_jobs(company):
-    url = f"{BASE_URL}/{company}/jobs"
+def get_jobs(board):
+    url = f"{BASE_URL}/{board}/jobs"
 
     response = requests.get(url, timeout=15)
     response.raise_for_status()
 
     jobs = response.json()["jobs"]
 
-    return [normalize_job(job, company) for job in jobs]
+    return [normalize_job(job) for job in jobs]
+
+
+def get_all_jobs():
+    all_jobs = []
+
+    for board in GREENHOUSE_BOARDS:
+        print(f"Collecting Greenhouse jobs from {board}...")
+
+        try:
+            jobs = get_jobs(board)
+            all_jobs.extend(jobs)
+
+        except Exception as e:
+            print(f"Failed to fetch {board}: {e}")
+
+    return all_jobs
+
+
 if __name__ == "__main__":
+    jobs = get_all_jobs()
 
-    jobs = get_jobs("stripe")
+    print(f"\nTotal Jobs: {len(jobs)}")
 
-    print(f"Total Jobs: {len(jobs)}")
-    print("-" * 50)
-
-    first = jobs[0]
-
-    print(first)
+    if jobs:
+        print(jobs[0])
