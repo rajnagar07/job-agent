@@ -13,6 +13,7 @@ from services.matching_service import (
     ai_match_resume_with_job,
 )
 from ai.skill_extractor import extract_skills
+from services.recommendation_service import get_recommendations, get_dashboard_stats
 
 def extract_text_from_pdf(filepath):
     # Support multiple possible function names in services.resume_service
@@ -409,6 +410,18 @@ def recommend_jobs():
 
         if filepath and os.path.exists(filepath):
             os.remove(filepath)
+        
+@app.route("/recommendations")
+def recommendations():
+
+    jobs = get_recommendations()
+    stats = get_dashboard_stats()
+
+    return render_template(
+        "recommendations.html",
+        jobs=jobs,
+        stats=stats
+    )
 # ===========================
 # Run Application
 # ===========================
