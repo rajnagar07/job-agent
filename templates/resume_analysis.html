@@ -1,226 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Resume Analysis | AI Job Agent</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-          rel="stylesheet">
-
-    <style>
-
-        body{
-            background:#f8fafc;
-        }
-
-        .analysis-card{
-
-            max-width:850px;
-
-            margin:60px auto;
-
-            border:none;
-
-            border-radius:18px;
-
-            box-shadow:0 10px 30px rgba(0,0,0,.08);
-
-            background:white;
-        }
-
-        .upload-box{
-
-            border:2px dashed #0d6efd;
-
-            border-radius:15px;
-
-            padding:45px;
-
-            background:#f8fbff;
-
-            text-align:center;
-        }
-
-        .upload-box i{
-
-            font-size:60px;
-
-            color:#0d6efd;
-        }
-
-        .feature{
-
-            padding:12px;
-        }
-
-        .feature i{
-
-            color:#198754;
-
-            margin-right:8px;
-        }
-
-        .btn{
-
-            border-radius:10px;
-        }
-
-    </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resume analysis · AI Job Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
 
-<div class="container">
+<nav>
+  <div class="container navrow">
+    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
+    <div class="navlinks">
+      <a href="{{ url_for('index') }}">Jobs</a>
+      <a href="/resume-analysis">Analyze resume</a>
+      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
+    </div>
+  </div>
+</nav>
 
-<div class="card analysis-card">
+<div class="container-narrow" style="padding:56px 24px;">
 
-<div class="card-body p-5">
+  <div class="page-head" style="text-align:center;padding:0 0 24px;">
+    <span class="eyebrow" style="margin:0 auto 16px;">📄 STANDALONE ANALYSIS</span>
+    <h1 style="font-size:1.8rem;">Resume analysis</h1>
+    <p class="lead" style="margin:0 auto;">Upload your resume and get AI feedback, skill extraction, and personalized recommendations — no job required.</p>
+  </div>
 
-<div class="text-center">
+  <div class="card">
+    <div class="card-body">
+      <form id="analysisForm" method="POST" enctype="multipart/form-data">
+        <div class="dropzone" id="dropzone">
+          <div class="icon">📄</div>
+          <h4>Upload your resume</h4>
+          <p class="hint">PDF only · Maximum 5 MB</p>
+          <input type="file" name="resume" id="resumeFile" accept=".pdf" required>
+          <div class="file-chip" id="fileChip"></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:20px;">🤖 Analyze resume</button>
+      </form>
 
-<h1 class="fw-bold">
+      <hr style="border:none;border-top:1px solid var(--line);margin:32px 0;">
 
-📄 Resume Analysis
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
+        <div class="section-title" style="font-size:0.92rem;">✓ AI resume summary</div>
+        <div class="section-title" style="font-size:0.92rem;">✓ Improvement suggestions</div>
+        <div class="section-title" style="font-size:0.92rem;">✓ Skill extraction</div>
+        <div class="section-title" style="font-size:0.92rem;">✓ Career recommendations</div>
+        <div class="section-title" style="font-size:0.92rem;">✓ Resume strength analysis</div>
+        <div class="section-title" style="font-size:0.92rem;color:var(--muted-2);">○ ATS optimization — coming soon</div>
+      </div>
 
-</h1>
-
-<p class="text-muted mt-3">
-
-Upload your resume and receive AI-powered feedback,
-resume insights, skill extraction, and personalized
-recommendations without selecting a job.
-
-</p>
-
-</div>
-
-<hr class="my-4">
-
-<form method="POST"
-      enctype="multipart/form-data">
-
-<div class="upload-box">
-
-<i class="bi bi-file-earmark-pdf-fill"></i>
-
-<h4 class="mt-3">
-
-Upload Your Resume
-
-</h4>
-
-<p class="text-muted">
-
-PDF only • Maximum 5 MB
-
-</p>
-
-<input
-type="file"
-name="resume"
-accept=".pdf"
-class="form-control mt-3"
-required>
-
-<button
-type="submit"
-class="btn btn-primary btn-lg mt-4">
-
-🤖 Analyze Resume
-
-</button>
+      <div style="text-align:center;margin-top:32px;">
+        <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back to home</a>
+      </div>
+    </div>
+  </div>
 
 </div>
 
-</form>
-
-<hr class="my-5">
-
-<div class="row">
-
-<div class="col-md-6">
-
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-AI Resume Summary
-
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="status">Reading your resume<span class="cursor"></span></div>
 </div>
 
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-Skill Extraction
-
-</div>
-
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-Resume Strength Analysis
-
-</div>
-
-</div>
-
-<div class="col-md-6">
-
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-Improvement Suggestions
-
-</div>
-
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-Career Recommendations
-
-</div>
-
-<div class="feature">
-
-<i class="bi bi-check-circle-fill"></i>
-
-ATS Optimization (Coming Soon)
-
-</div>
-
-</div>
-
-</div>
-
-<div class="text-center mt-5">
-
-<a href="/"
-class="btn btn-outline-secondary">
-
-← Back to Home
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+<script>
+  const fileInput = document.getElementById('resumeFile');
+  const fileChip = document.getElementById('fileChip');
+  const dropzone = document.getElementById('dropzone');
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length){
+      fileChip.textContent = '✓ ' + fileInput.files[0].name;
+      fileChip.classList.add('show');
+    }
+  });
+  ['dragover','dragenter'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
+  ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
+  document.getElementById('analysisForm').addEventListener('submit', () => {
+    document.getElementById('loadingOverlay').classList.add('show');
+  });
+</script>
 
 </body>
-
 </html>

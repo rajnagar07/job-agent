@@ -1,18 +1,40 @@
 from database.db import SessionLocal
 from database.models import Job
+from services.badge_service import get_badge
 
 
-def get_recommendations(limit=20):
+def get_recommendations(limit=20,
+    min_score=None,
+    company=None,
+    location=None,
+    source=None):
     session = SessionLocal()
 
     try:
+        query = session.query(Job).filter(Job.status == "active")
+
+        if min_score:
+            query = query.filter(Job.match_score >= min_score)
+
+        if company:
+            query = query.filter(Job.company == company)
+
+        if location:
+            query = query.filter(Job.location == location)
+
+        if source:
+            query = query.filter(Job.source == source)
+
         jobs = (
-            session.query(Job)
-            .filter(Job.status == "active")
+            query
             .order_by(Job.match_score.desc())
             .limit(limit)
             .all()
         )
+
+        # Add AI badge to each job
+        for job in jobs:
+            job.badge = get_badge(job.match_score)
 
         return jobs
 
@@ -47,6 +69,24 @@ def get_dashboard_stats():
             "average": avg_match,
             "resume_status": "Uploaded"
         }
+
+    finally:
+        session.close()
+        
+def get_job(job_id):
+    session = SessionLocal()
+
+    try:
+        job = (
+            session.query(Job)
+            .filter(Job.id == job_id)
+            .first()
+        )
+
+        if job:
+            job.badge = get_badge(job.match_score)
+
+        return job
 
     finally:
         session.close()

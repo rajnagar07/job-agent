@@ -13,7 +13,7 @@ from services.matching_service import (
     ai_match_resume_with_job,
 )
 from ai.skill_extractor import extract_skills
-from services.recommendation_service import get_recommendations, get_dashboard_stats
+from services.recommendation_service import get_recommendations, get_dashboard_stats,get_job,get_badge
 
 def extract_text_from_pdf(filepath):
     # Support multiple possible function names in services.resume_service
@@ -414,13 +414,34 @@ def recommend_jobs():
 @app.route("/recommendations")
 def recommendations():
 
-    jobs = get_recommendations()
+    min_score = request.args.get("min_score", type=int)
+    company = request.args.get("company")
+    location = request.args.get("location")
+    source = request.args.get("source")
+
+    jobs = get_recommendations(
+        min_score=min_score,
+        company=company,
+        location=location,
+        source=source
+    )
+
     stats = get_dashboard_stats()
 
     return render_template(
         "recommendations.html",
         jobs=jobs,
         stats=stats
+    )
+    
+@app.route("/recommendation/<int:job_id>")
+def recommendation_details(job_id):
+
+    job = get_job(job_id)
+
+    return render_template(
+        "recommendation_details.html",
+        job=job
     )
 # ===========================
 # Run Application

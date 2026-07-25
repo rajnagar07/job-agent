@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ job.title }} · Recommendation · AI Job Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav>
+  <div class="container navrow">
+    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
+    <div class="navlinks">
+      <a href="{{ url_for('index') }}">Jobs</a>
+      <a href="/resume-analysis">Analyze resume</a>
+      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="max-width:920px;padding-top:32px;padding-bottom:48px;">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+    <div>
+      <h2 style="font-size:1.5rem;margin-bottom:4px;">{{ job.title }}</h2>
+      <p style="color:var(--muted);">{{ job.company }}</p>
+    </div>
+    <a href="/recommendations" class="btn btn-ghost">← Back</a>
+  </div>
+
+  <div class="meta-grid" style="margin-bottom:24px;">
+    <div class="meta-tile">
+      <div class="label">Match score</div>
+      <div class="val score-num" style="color:var(--good);font-size:1.4rem;">{{ job.match_score }}%</div>
+    </div>
+    <div class="meta-tile">
+      <div class="label">AI badge</div>
+      <div class="val">{{ job.badge }}</div>
+    </div>
+    <div class="meta-tile">
+      <div class="label">Location</div>
+      <div class="val">{{ job.location }}</div>
+    </div>
+    <div class="meta-tile">
+      <div class="label">Source</div>
+      <div class="val">{{ job.source }}</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">Job description</div>
+    <div class="card-body">
+      <p style="white-space:pre-line;font-size:0.92rem;">{{ job.description }}</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">🤖 AI analysis</div>
+    <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <div class="section-title" style="color:var(--good);">Strengths</div>
+        <ul>
+          <li style="padding:6px 0;font-size:0.9rem;">✅ High match score: {{ job.match_score }}%</li>
+          <li style="padding:6px 0;font-size:0.9rem;">✅ Relevant role: {{ job.title }}</li>
+          <li style="padding:6px 0;font-size:0.9rem;">✅ Active job posting</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title" style="color:var(--mid);">Suggestions</div>
+        <ul>
+          <li style="padding:6px 0;font-size:0.9rem;">💡 Review the job description carefully.</li>
+          <li style="padding:6px 0;font-size:0.9rem;">💡 Tailor your resume before applying.</li>
+          <li style="padding:6px 0;font-size:0.9rem;">💡 Prepare for role-specific interview questions.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Apply</div>
+    <div class="card-body">
+      <a href="{{ job.url }}" target="_blank" class="btn btn-primary btn-lg">🚀 Apply now</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container foot-row">
+    <div class="stack">
+      <span class="pill">Flask</span>
+      <span class="pill">SQLite</span>
+      <span class="pill">LangChain</span>
+      <span class="pill">Google Gemini</span>
+    </div>
+    <div class="foot-small">© 2026 Raj Nagar — AI Job Agent</div>
+  </div>
+</footer>
+
+</body>
+</html>
