@@ -5,55 +5,72 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    DateTime
+    DateTime,
+    Boolean,
+    ForeignKey
+)
+
+from sqlalchemy.orm import relationship
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
 )
 
 from database.db import Base
 
 
-class Job(Base):
-    __tablename__ = "jobs"
+# ============================================================
+# User
+# ============================================================
+
+class User(Base):
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
 
-    company = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    location = Column(String)
-
-    experience = Column(String)
-    salary = Column(String)
-
-    source = Column(String)
-    posted_date = Column(String)
-
-    description = Column(Text)
-
-    url = Column(String, unique=True, nullable=False)
-
-    match_score = Column(Integer, default=0)
-
-    # ----------------------------
-    # Job Lifecycle Management
-    # ----------------------------
-
-    # active | expired
-    status = Column(String(20), default="active", nullable=False)
-
-    # Last time this job was found during scraping
-    last_seen = Column(
-        DateTime,
-        default=datetime.utcnow,
+    name = Column(
+        String(100),
         nullable=False
     )
-    last_scrape_id = Column(Integer, nullable=True)
-    # When job was first added
+
+    email = Column(
+        String(120),
+        unique=True,
+        index=True,
+        nullable=True
+    )
+
+    phone = Column(
+        String(20),
+        unique=True,
+        index=True,
+        nullable=True
+    )
+
+    password_hash = Column(
+        String(255),
+        nullable=False
+    )
+
+    email_verified = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    is_active = Column(
+        Boolean,
+        default=True,
+        nullable=False
+    )
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow,
         nullable=False
     )
 
-    # Updated whenever any job field changes
     updated_at = Column(
         DateTime,
         default=datetime.utcnow,
@@ -61,22 +78,186 @@ class Job(Base):
         nullable=False
     )
 
-    # Scheduled deletion date after expiry
-    expires_at = Column(DateTime, nullable=True)
-    
-    
+    # Relationship
+    tokens = relationship(
+        "UserToken",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
+
+
+# ============================================================
+# User Tokens
+# ============================================================
+
+class UserToken(Base):
+    __tablename__ = "user_tokens"
+
+    id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    token = Column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False
+    )
+
+    # verify_email / reset_password
+    token_type = Column(
+        String(30),
+        nullable=False
+    )
+
+    expires_at = Column(
+        DateTime,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    user = relationship(
+        "User",
+        back_populates="tokens"
+    )
+
+
+# ============================================================
+# Jobs
+# ============================================================
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True)
+
+    company = Column(
+        String,
+        nullable=False
+    )
+
+    title = Column(
+        String,
+        nullable=False
+    )
+
+    location = Column(String)
+
+    experience = Column(String)
+
+    salary = Column(String)
+
+    source = Column(String)
+
+    posted_date = Column(String)
+
+    description = Column(Text)
+
+    url = Column(
+        String,
+        unique=True,
+        nullable=False
+    )
+
+    match_score = Column(
+        Integer,
+        default=0
+    )
+
+    # -----------------------------
+    # Lifecycle
+    # -----------------------------
+
+    status = Column(
+        String(20),
+        default="active",
+        nullable=False
+    )
+
+    last_seen = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    last_scrape_id = Column(
+        Integer,
+        nullable=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
+    )
+
+    expires_at = Column(
+        DateTime,
+        nullable=True
+    )
+
+
+# ============================================================
+# Scrape Logs
+# ============================================================
+
 class ScrapeLog(Base):
     __tablename__ = "scrape_logs"
 
     id = Column(Integer, primary_key=True)
 
-    started_at = Column(DateTime, default=datetime.utcnow)
-    finished_at = Column(DateTime)
+    started_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    finished_at = Column(
+        DateTime
+    )
 
     source = Column(String)
 
-    jobs_found = Column(Integer, default=0)
-    new_jobs = Column(Integer, default=0)
-    updated_jobs = Column(Integer, default=0)
+    jobs_found = Column(
+        Integer,
+        default=0
+    )
 
-    status = Column(String(20), default="running")
+    new_jobs = Column(
+        Integer,
+        default=0
+    )
+
+    updated_jobs = Column(
+        Integer,
+        default=0
+    )
+
+    status = Column(
+        String(20),
+        default="running"
+    )

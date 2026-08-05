@@ -14,6 +14,11 @@ from services.matching_service import (
 )
 from ai.skill_extractor import extract_skills
 from services.recommendation_service import get_recommendations, get_dashboard_stats,get_job,get_badge
+from auth.routes import auth_bp
+from database.models import Base
+from database.db import engine
+
+Base.metadata.create_all(bind=engine)
 
 def extract_text_from_pdf(filepath):
     # Support multiple possible function names in services.resume_service
@@ -43,10 +48,19 @@ app = Flask(
     static_folder=os.path.join(BASE_DIR, "static"),
 )
 
-app.secret_key = os.getenv(
+
+
+app.config["SECRET_KEY"] = os.getenv(
     "FLASK_SECRET_KEY",
     "raj_ai_job_agent_secret"
 )
+
+app.register_blueprint(auth_bp)
+
+# app.secret_key = os.getenv(
+#     "FLASK_SECRET_KEY",
+#     "raj_ai_job_agent_secret"
+# )
 
 # ===========================
 # Upload Configuration
