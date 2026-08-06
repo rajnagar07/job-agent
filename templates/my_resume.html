@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My Resume | AI Job Agent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <h3 class="mb-2"><i class="bi bi-file-earmark-person text-primary me-2"></i>My Resume</h3>
+        <p class="text-muted">Upload once. Recommendations will use it automatically.</p>
+
+        {% if resume %}
+          <div class="alert alert-success">
+            <div><strong>Current Resume:</strong> {{ resume.original_filename if resume.original_filename is defined else (resume.filename if resume.filename is defined else "Resume.pdf") }}</div>
+            <div class="small">Updated: {{ resume.updated_at if resume.updated_at is defined else "-" }}</div>
+          </div>
+        {% else %}
+          <div class="alert alert-warning">No resume found. Please upload your PDF resume.</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" data-loading>
+          <div class="mb-3">
+            <label for="resume" class="form-label">Resume (PDF only)</label>
+            <input class="form-control" type="file" id="resume" name="resume" accept=".pdf,application/pdf" required>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4" type="submit">
+            {% if resume %}Update Resume{% else %}Upload Resume{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
