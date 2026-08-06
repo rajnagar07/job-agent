@@ -1,22 +1,60 @@
-<footer class="bg-dark text-white mt-5 py-4">
+<footer class="site-footer">
+  <div class="container">
 
-<div class="container text-center">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="{{ url_for('landing') }}"><span class="dot"></span>job_agent()</a>
+        <p>An AI agent that reads job postings and resumes the way a hiring editor would, then shows you exactly what to fix.</p>
+        <div class="footer-social" style="margin-top:18px;">
+          <a href="#" aria-label="X / Twitter">𝕏</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="GitHub">gh</a>
+        </div>
+      </div>
 
-<h5>AI Job Agent</h5>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="{{ url_for('index') }}">Browse jobs</a></li>
+          <li><a href="{{ url_for('recommend_jobs') }}">Find my matches</a></li>
+          <li><a href="{{ url_for('resume_analysis') }}">Analyze resume</a></li>
+          <li><a href="{{ url_for('landing') }}#how-it-works">How it works</a></li>
+        </ul>
+      </div>
 
-<p class="mb-2">
+      <div class="footer-col">
+        <h5>Account</h5>
+        <ul>
+          {% if session.get("user_id") %}
+          <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+          {% else %}
+          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+          <li><a href="{{ url_for('auth.signup') }}">Sign up</a></li>
+          <li><a href="{{ url_for('auth.forgot_password_route') }}">Forgot password</a></li>
+          {% endif %}
+        </ul>
+      </div>
 
-Find jobs intelligently using AI.
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy policy</a></li>
+          <li><a href="#">Terms of service</a></li>
+          <li><a href="#">Cookie policy</a></li>
+        </ul>
+      </div>
+    </div>
 
-</p>
+    <div class="footer-bottom">
+      <div class="footer-stack">
+        <span class="pill">Flask</span>
+        <span class="pill">SQLite</span>
+        <span class="pill">LangChain</span>
+        <span class="pill">Google Gemini</span>
+      </div>
+      <span>© 2026 AI Job Agent. All rights reserved.</span>
+    </div>
 
-<small>
-
-© 2026 AI Job Agent.
-All Rights Reserved.
-
-</small>
-
-</div>
-
+  </div>
 </footer>

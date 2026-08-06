@@ -1,57 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resume analysis · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Resume analysis · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
-    </div>
-  </div>
-</nav>
-
-<div class="container-narrow" style="padding:56px 24px;">
+{% block content %}
+<div class="container-narrow" style="padding:40px 24px 56px;">
 
   <div class="page-head" style="text-align:center;padding:0 0 24px;">
-    <span class="eyebrow" style="margin:0 auto 16px;">📄 STANDALONE ANALYSIS</span>
+    <span class="eyebrow" style="margin:0 auto 12px;justify-content:center;">STANDALONE ANALYSIS</span>
     <h1 style="font-size:1.8rem;">Resume analysis</h1>
     <p class="lead" style="margin:0 auto;">Upload your resume and get AI feedback, skill extraction, and personalized recommendations — no job required.</p>
   </div>
 
   <div class="card">
     <div class="card-body">
-      <form id="analysisForm" method="POST" enctype="multipart/form-data">
+      <form id="analysisForm" data-loading method="POST" enctype="multipart/form-data">
         <div class="dropzone" id="dropzone">
           <div class="icon">📄</div>
           <h4>Upload your resume</h4>
-          <p class="hint">PDF only · Maximum 5 MB</p>
+          <p class="hint">PDF only · Maximum 5&nbsp;MB</p>
           <input type="file" name="resume" id="resumeFile" accept=".pdf" required>
           <div class="file-chip" id="fileChip"></div>
         </div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:20px;">🤖 Analyze resume</button>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:20px;">Analyze resume</button>
       </form>
 
       <hr style="border:none;border-top:1px solid var(--line);margin:32px 0;">
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
-        <div class="section-title" style="font-size:0.92rem;">✓ AI resume summary</div>
-        <div class="section-title" style="font-size:0.92rem;">✓ Improvement suggestions</div>
-        <div class="section-title" style="font-size:0.92rem;">✓ Skill extraction</div>
-        <div class="section-title" style="font-size:0.92rem;">✓ Career recommendations</div>
-        <div class="section-title" style="font-size:0.92rem;">✓ Resume strength analysis</div>
-        <div class="section-title" style="font-size:0.92rem;color:var(--muted-2);">○ ATS optimization — coming soon</div>
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">AI resume summary</span></div>
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">Improvement suggestions</span></div>
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">Skill extraction</span></div>
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">Career recommendations</span></div>
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">Resume strength analysis</span></div>
+        <div class="markline"><span class="mark-ico" style="color:var(--ink-faint);">○</span><span class="mark-txt" style="color:var(--ink-faint);">ATS optimization — coming soon</span></div>
       </div>
 
       <div style="text-align:center;margin-top:32px;">
@@ -64,25 +44,6 @@
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="status">Reading your resume<span class="cursor"></span></div>
+  <div class="status">Analyzing resume<span class="cursor"></span></div>
 </div>
-
-<script>
-  const fileInput = document.getElementById('resumeFile');
-  const fileChip = document.getElementById('fileChip');
-  const dropzone = document.getElementById('dropzone');
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length){
-      fileChip.textContent = '✓ ' + fileInput.files[0].name;
-      fileChip.classList.add('show');
-    }
-  });
-  ['dragover','dragenter'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
-  ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
-  document.getElementById('analysisForm').addEventListener('submit', () => {
-    document.getElementById('loadingOverlay').classList.add('show');
-  });
-</script>
-
-</body>
-</html>
+{% endblock %}

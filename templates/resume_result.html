@@ -1,59 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resume analysis report · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Resume analysis report · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
-    </div>
-  </div>
-</nav>
+{% block content %}
+<div class="container" style="max-width:920px;padding-top:16px;padding-bottom:56px;">
 
-<div class="container" style="max-width:920px;padding-top:32px;padding-bottom:48px;">
-
-  <div class="page-head" style="text-align:center;padding:0 0 32px;">
-    <span class="eyebrow" style="margin:0 auto 16px;">🤖 REPORT</span>
+  <div class="page-head" style="text-align:center;padding:0 0 28px;">
+    <span class="eyebrow" style="margin:0 auto 12px;justify-content:center;">REPORT</span>
     <h1 style="font-size:1.8rem;">Resume analysis report</h1>
     <p class="lead" style="margin:0 auto;">Powered by Google Gemini</p>
   </div>
 
   <div class="stat-row" style="grid-template-columns:repeat(3,1fr);">
-    <div class="stat">
-      <div class="label">ATS score</div>
-      <div class="value accent">{{ analysis.ats_score }}</div>
-    </div>
-    <div class="stat">
-      <div class="label">Resume score</div>
-      <div class="value">{{ analysis.resume_score }}</div>
-    </div>
-    <div class="stat">
-      <div class="label">Verdict</div>
-      <div class="value" style="font-size:1.05rem;">{{ analysis.verdict }}</div>
-    </div>
+    <div class="stat"><div class="label">ATS score</div><div class="value accent">{{ analysis.ats_score }}</div></div>
+    <div class="stat"><div class="label">Resume score</div><div class="value">{{ analysis.resume_score }}</div></div>
+    <div class="stat"><div class="label">Verdict</div><div class="value" style="font-size:1.05rem;">{{ analysis.verdict }}</div></div>
   </div>
 
   <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">📋 Resume summary</div>
-    <div class="card-body">
-      <p style="font-size:0.92rem;">{{ analysis.summary }}</p>
-    </div>
+    <div class="card-header">Resume summary</div>
+    <div class="card-body"><p style="font-size:.92rem;margin:0;">{{ analysis.summary }}</p></div>
   </div>
 
   <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">🛠 Technical skills</div>
+    <div class="card-header">Skills found</div>
     <div class="card-body">
       {% if analysis.skills %}
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -62,7 +31,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <p style="color:var(--muted);font-size:0.9rem;">No skills detected.</p>
+      <p style="color:var(--ink-faint);font-size:.9rem;margin:0;">No skills detected.</p>
       {% endif %}
     </div>
   </div>
@@ -70,49 +39,45 @@
   <div class="card" style="margin-bottom:20px;">
     <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div>
-        <div class="section-title" style="color:var(--good);">✨ Strengths</div>
+        <div class="section-title" style="color:var(--pass);">Strengths</div>
         {% if analysis.strengths %}
-        <ul>
-          {% for item in analysis.strengths %}
-          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:0.9rem;">✅ {{ item }}</li>
-          {% endfor %}
-        </ul>
+        {% for item in analysis.strengths %}
+        <div class="markline pass"><span class="mark-ico">✓</span><span class="mark-txt">{{ item }}</span></div>
+        {% endfor %}
         {% else %}
-        <p style="color:var(--muted);font-size:0.9rem;">No strengths available.</p>
+        <p style="color:var(--ink-faint);font-size:.9rem;">No strengths available.</p>
         {% endif %}
       </div>
       <div>
-        <div class="section-title" style="color:var(--mid);">⚠ Areas for improvement</div>
+        <div class="section-title" style="color:var(--fail);">Missing / areas to improve</div>
         {% if analysis.weaknesses %}
-        <ul>
-          {% for item in analysis.weaknesses %}
-          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:0.9rem;">⚠ {{ item }}</li>
-          {% endfor %}
-        </ul>
+        {% for item in analysis.weaknesses %}
+        <div class="markline fail"><span class="mark-ico">✗</span><span class="mark-txt">{{ item }}</span></div>
+        {% endfor %}
         {% else %}
-        <p style="color:var(--muted);font-size:0.9rem;">No improvement areas found.</p>
+        <p style="color:var(--ink-faint);font-size:.9rem;">No improvement areas found.</p>
         {% endif %}
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">💡 Recommendations</div>
+    <div class="card-header">Suggestions</div>
     <div class="card-body">
       {% if analysis.recommendations %}
       <ul>
         {% for item in analysis.recommendations %}
-        <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:0.9rem;">💡 {{ item }}</li>
+        <li style="padding:8px 0;border-bottom:1px solid var(--line-2);font-size:.9rem;">💡 {{ item }}</li>
         {% endfor %}
       </ul>
       {% else %}
-      <p style="color:var(--muted);font-size:0.9rem;">No recommendations available.</p>
+      <p style="color:var(--ink-faint);font-size:.9rem;margin:0;">No recommendations available.</p>
       {% endif %}
     </div>
   </div>
 
   <div class="card" style="margin-bottom:32px;">
-    <div class="card-header">💼 Recommended roles</div>
+    <div class="card-header">Recommended roles</div>
     <div class="card-body">
       {% if analysis.recommended_roles %}
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -127,23 +92,9 @@
   </div>
 
   <div style="text-align:center;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
-    <a href="/resume-analysis" class="btn btn-primary btn-lg">🔄 Analyze another resume</a>
-    <a href="/jobs" class="btn btn-ghost btn-lg">💼 Browse jobs</a>
+    <a href="{{ url_for('resume_analysis') }}" class="btn btn-primary btn-lg">Analyze another resume</a>
+    <a href="{{ url_for('index') }}" class="btn btn-ghost btn-lg">Browse jobs</a>
   </div>
 
 </div>
-
-<footer>
-  <div class="container foot-row">
-    <div class="stack">
-      <span class="pill">Flask</span>
-      <span class="pill">SQLite</span>
-      <span class="pill">LangChain</span>
-      <span class="pill">Google Gemini</span>
-    </div>
-    <div class="foot-small">© 2026 Raj Nagar — AI Job Agent</div>
-  </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}

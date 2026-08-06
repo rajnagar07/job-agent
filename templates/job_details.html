@@ -1,35 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ job.title }} · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}{{ job.title }} · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
+{% block content %}
+<div class="container" style="padding-top:8px;padding-bottom:56px;">
+
+  <div class="card" style="margin-bottom:20px;overflow:hidden;">
+    <div style="background:var(--ink);color:#fff;padding:28px 30px;">
+      <span class="eyebrow" style="color:var(--mark);">JOB POSTING</span>
+      <h2 style="font-size:1.7rem;margin:10px 0 4px;color:#fff;">{{ job.title }}</h2>
+      <h5 class="mono" style="color:#B7B9C4;font-weight:500;font-size:.95rem;margin:0;">{{ job.company }}</h5>
     </div>
-  </div>
-</nav>
 
-<div class="container" style="padding-top:32px;">
-
-  <div class="card" style="margin-bottom:20px;">
     <div class="card-body">
-      <span class="eyebrow">📄 JOB POSTING</span>
-      <h2 style="font-size:1.6rem;margin-bottom:6px;">{{ job.title }}</h2>
-      <h5 class="mono" style="color:var(--muted);font-weight:500;font-size:0.95rem;margin-bottom:22px;">🏢 {{ job.company }}</h5>
-
       <div class="meta-grid">
         <div class="meta-tile">
           <div class="icon">🏢</div>
@@ -59,34 +41,38 @@
         </div>
       </div>
 
+      {% if job.experience %}
+      <div style="margin-top:18px;display:flex;align-items:center;gap:10px;">
+        <span class="tag">Experience</span>
+        <span style="font-size:.92rem;">{{ job.experience }}</span>
+      </div>
+      {% endif %}
+
+      {% if job.skills %}
+      <div style="margin-top:18px;">
+        <div class="section-title">Skills mentioned</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          {% for skill in job.skills %}
+          <span class="tag tag-source">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;">
         <a href="{{ url_for('index') }}" class="btn btn-ghost">← Back</a>
-        <a href="{{ job.url }}" target="_blank" class="btn btn-primary">🌐 Apply now</a>
-        <a href="{{ url_for('upload_resume', job_id=job.id) }}" class="btn btn-secondary">🤖 Analyze my resume against this job</a>
+        <a href="{{ job.url }}" target="_blank" class="btn btn-secondary">Apply now</a>
+        <a href="{{ url_for('upload_resume', job_id=job.id) }}" class="btn btn-primary">Match my resume against this job</a>
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-bottom:32px;">
-    <div class="card-header">📄 Job description</div>
+    <div class="card-header">Job description</div>
     <div class="card-body">
-      <div class="mono" style="white-space:pre-wrap;line-height:1.9;font-size:0.95rem;color:var(--text);">{{ cleaned_description | replace('\n','<br>') | safe }}</div>
+      <div class="mono" style="white-space:pre-wrap;line-height:1.9;font-size:.95rem;color:var(--ink);">{{ cleaned_description | replace('\n','<br>') | safe }}</div>
     </div>
   </div>
 
 </div>
-
-<footer>
-  <div class="container foot-row">
-    <div class="stack">
-      <span class="pill">Flask</span>
-      <span class="pill">SQLite</span>
-      <span class="pill">LangChain</span>
-      <span class="pill">Google Gemini</span>
-    </div>
-    <div class="foot-small">© 2026 Raj Nagar — AI Job Agent</div>
-  </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}

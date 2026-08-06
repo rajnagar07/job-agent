@@ -1,46 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Find my matches · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Find my matches · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
+{% block content %}
+<div class="container-narrow" style="padding:40px 24px 56px;">
+
+  <div class="page-head" style="padding:0 0 20px;">
+    <span class="eyebrow">AI JOB RECOMMENDATION</span>
+    <h1 style="font-size:1.7rem;">Find my matches</h1>
+    <p class="lead">Upload your resume once and the agent scores it against every job currently in the database, then ranks the best matches for you.</p>
+  </div>
+
+  {% if resume %}
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div class="section-title" style="margin-bottom:4px;">Resume on file</div>
+        <strong>{{ resume.original_filename if resume.original_filename is defined else (resume.filename if resume.filename is defined else "Resume.pdf") }}</strong>
+      </div>
+      <form method="POST">
+        <input type="hidden" name="use_saved" value="1">
+        <button class="btn btn-secondary" type="submit">Use this resume</button>
+      </form>
     </div>
   </div>
-</nav>
-
-<div class="container-narrow" style="padding:56px 24px;">
+  <div class="auth-divider">or upload a different one</div>
+  {% endif %}
 
   <div class="card">
-    <div class="card-header">🤖 AI job recommendation</div>
     <div class="card-body">
-      <p style="color:var(--muted);margin-bottom:20px;">Upload your resume once and the agent scores it against every job currently in the database, then ranks the best matches for you.</p>
-
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }}">
-        <span>{{ message }}</span>
-        <button type="button" class="alert-close" onclick="this.parentElement.remove()">✕</button>
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
-
-      <form id="recForm" method="POST" enctype="multipart/form-data">
+      <form id="recForm" data-loading method="POST" enctype="multipart/form-data">
         <div class="dropzone" id="dropzone">
           <div class="icon">📄</div>
           <h4>Drop your resume here</h4>
@@ -49,7 +37,7 @@
           <div class="file-chip" id="fileChip"></div>
         </div>
 
-        <button class="btn btn-primary btn-lg btn-block" style="margin-top:20px;" type="submit">🚀 Find best matching jobs</button>
+        <button class="btn btn-primary btn-lg btn-block" style="margin-top:20px;" type="submit">Find best matching jobs</button>
       </form>
     </div>
   </div>
@@ -60,23 +48,4 @@
   <div class="spinner"></div>
   <div class="status">Comparing your resume against every posting<span class="cursor"></span></div>
 </div>
-
-<script>
-  const fileInput = document.getElementById('resumeFile');
-  const fileChip = document.getElementById('fileChip');
-  const dropzone = document.getElementById('dropzone');
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length){
-      fileChip.textContent = '✓ ' + fileInput.files[0].name;
-      fileChip.classList.add('show');
-    }
-  });
-  ['dragover','dragenter'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
-  ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
-  document.getElementById('recForm').addEventListener('submit', () => {
-    document.getElementById('loadingOverlay').classList.add('show');
-  });
-</script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,34 +1,45 @@
 {% extends "base.html" %}
-{% block title %}My Resume | AI Job Agent{% endblock %}
+{% block title %}My resume · AI Job Agent{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm rounded-4">
-      <div class="card-body p-4 p-md-5">
-        <h3 class="mb-2"><i class="bi bi-file-earmark-person text-primary me-2"></i>My Resume</h3>
-        <p class="text-muted">Upload once. Recommendations will use it automatically.</p>
+<div class="container-narrow" style="padding:40px 24px 56px;">
 
-        {% if resume %}
-          <div class="alert alert-success">
-            <div><strong>Current Resume:</strong> {{ resume.original_filename if resume.original_filename is defined else (resume.filename if resume.filename is defined else "Resume.pdf") }}</div>
-            <div class="small">Updated: {{ resume.updated_at if resume.updated_at is defined else "-" }}</div>
-          </div>
-        {% else %}
-          <div class="alert alert-warning">No resume found. Please upload your PDF resume.</div>
-        {% endif %}
+  <div class="page-head" style="padding:0 0 20px;">
+    <span class="eyebrow">SAVED RESUME</span>
+    <h1 style="font-size:1.7rem;">My resume</h1>
+    <p class="lead">Upload once. Your recommendations will use it automatically.</p>
+  </div>
 
-        <form method="POST" enctype="multipart/form-data" data-loading>
-          <div class="mb-3">
-            <label for="resume" class="form-label">Resume (PDF only)</label>
-            <input class="form-control" type="file" id="resume" name="resume" accept=".pdf,application/pdf" required>
-          </div>
-          <button class="btn btn-primary rounded-pill px-4" type="submit">
-            {% if resume %}Update Resume{% else %}Upload Resume{% endif %}
-          </button>
-        </form>
-      </div>
+  <div class="card">
+    <div class="card-body">
+
+      {% if resume %}
+        <div class="alert alert-success" style="align-items:flex-start;flex-direction:column;gap:2px;">
+          <strong>Current resume: {{ resume.original_filename if resume.original_filename is defined else (resume.filename if resume.filename is defined else "Resume.pdf") }}</strong>
+          <span style="font-size:.82rem;opacity:.85;">Updated: {{ resume.updated_at if resume.updated_at is defined else "-" }}</span>
+        </div>
+      {% else %}
+        <div class="alert alert-warning">No resume found. Please upload your PDF resume.</div>
+      {% endif %}
+
+      <form method="POST" data-loading enctype="multipart/form-data">
+        <div class="dropzone" id="dropzone">
+          <div class="icon">📄</div>
+          <h4>{% if resume %}Replace your resume{% else %}Upload your resume{% endif %}</h4>
+          <p class="hint">PDF only</p>
+          <input class="form-control" type="file" id="resume" name="resume" accept=".pdf,application/pdf" required>
+          <div class="file-chip" id="fileChip"></div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" style="margin-top:20px;">
+          {% if resume %}Update resume{% else %}Upload resume{% endif %}
+        </button>
+      </form>
     </div>
   </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="status">Saving your resume<span class="cursor"></span></div>
 </div>
 {% endblock %}

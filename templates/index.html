@@ -1,71 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jobs · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Jobs · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
-    </div>
-  </div>
-</nav>
-
-<div class="container">
+{% block content %}
+<div class="container" style="padding-bottom:56px;">
 
   <div class="page-head">
-    <span class="eyebrow">● LIVE JOB FEED</span>
+    <span class="eyebrow">LIVE JOB FEED</span>
     <h1>Available jobs</h1>
     <p class="lead">Every posting the agent has collected so far — search them directly, or let the agent match your resume against all of them at once.</p>
   </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  {% for category, message in messages %}
-  <div class="alert alert-{{ category }}">
-    <span>{{ message }}</span>
-    <button type="button" class="alert-close" onclick="this.parentElement.remove()">✕</button>
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
   <div class="stat-row">
-    <div class="stat">
-      <div class="label">Total jobs</div>
-      <div class="value">{{ total_jobs }}</div>
-    </div>
-    <div class="stat">
-      <div class="label">Companies</div>
-      <div class="value">{{ companies }}</div>
-    </div>
-    <div class="stat">
-      <div class="label">Sources</div>
-      <div class="value">{{ sources }}</div>
-    </div>
+    <div class="stat"><div class="label">Total jobs</div><div class="value">{{ total_jobs }}</div></div>
+    <div class="stat"><div class="label">Companies</div><div class="value">{{ companies }}</div></div>
+    <div class="stat"><div class="label">Sources</div><div class="value">{{ sources }}</div></div>
   </div>
 
   <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
-    <h2 style="font-size:1.2rem;">Browse postings</h2>
-    <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary">🤖 Find best jobs for my resume</a>
+    <h2 style="font-size:1.2rem;margin:0;">Browse postings</h2>
+    <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary">Find best jobs for my resume</a>
   </div>
 
   <form method="GET" style="margin-bottom:32px;">
-    <div class="search-row">
-      <input type="text" class="field" placeholder="Search by title, company, or keyword…" name="search" value="{{ search }}">
+    <div class="search-row" style="margin-bottom:12px;">
+      <input type="text" class="field" placeholder="Search by title, company, or keyword…" name="search" value="{{ search or '' }}">
       <button class="btn btn-secondary">Search</button>
     </div>
+    {% if locations or sources_list %}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      {% if locations %}
+      <select name="location" class="field" style="max-width:220px;" onchange="this.form.submit()">
+        <option value="">All locations</option>
+        {% for loc in locations %}
+        <option value="{{ loc }}" {% if location == loc %}selected{% endif %}>{{ loc }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      {% if sources_list %}
+      <select name="source" class="field" style="max-width:220px;" onchange="this.form.submit()">
+        <option value="">All sources</option>
+        {% for src in sources_list %}
+        <option value="{{ src }}" {% if source == src %}selected{% endif %}>{{ src }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+    {% endif %}
   </form>
 
   {% if jobs %}
@@ -74,18 +54,31 @@
     <div class="card card-hover job-card">
       <div class="card-body">
         <h4>{{ job.title }}</h4>
-        <div class="company">🏢 {{ job.company }}</div>
-        <div class="loc">📍 {{ job.location if job.location else "Remote / Not specified" }}</div>
+        <div class="company">{{ job.company }}</div>
+        <div class="loc">{{ job.location if job.location else "Remote / Not specified" }}</div>
         <span class="tag tag-source">{{ job.source }}</span>
 
         <div class="actions">
-          <a href="{{ url_for('upload_resume', job_id=job.id) }}" class="btn btn-primary btn-block">🤖 AI resume match</a>
-          <a href="/job/{{ job.id }}" class="btn btn-ghost btn-block">📄 View details</a>
+          <a href="{{ url_for('upload_resume', job_id=job.id) }}" class="btn btn-primary btn-block">AI resume match</a>
+          <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-ghost btn-block">View details</a>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
+
+  {% if pagination and pagination.pages > 1 %}
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:32px;">
+    {% if pagination.has_prev %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('index', page=pagination.page - 1, search=search) }}">← Prev</a>
+    {% endif %}
+    <span class="mono" style="align-self:center;font-size:.85rem;color:var(--ink-faint);">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    {% if pagination.has_next %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('index', page=pagination.page + 1, search=search) }}">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% else %}
   <div class="empty-state">
     <div class="icon">🔍</div>
@@ -96,18 +89,4 @@
   {% endif %}
 
 </div>
-
-<footer>
-  <div class="container foot-row">
-    <div class="stack">
-      <span class="pill">Flask</span>
-      <span class="pill">SQLite</span>
-      <span class="pill">LangChain</span>
-      <span class="pill">Google Gemini</span>
-    </div>
-    <div class="foot-small">© 2026 Raj Nagar — AI Job Agent</div>
-  </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}

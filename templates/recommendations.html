@@ -1,52 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Recommendations · AI Job Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Recommendations · AI Job Agent{% endblock %}
 
-<nav>
-  <div class="container navrow">
-    <a class="brand" href="{{ url_for('index') }}"><span class="dot"></span>job_agent()</a>
-    <div class="navlinks">
-      <a href="{{ url_for('index') }}">Jobs</a>
-      <a href="/resume-analysis">Analyze resume</a>
-      <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
-    </div>
-  </div>
-</nav>
-
-<div class="container" style="padding-top:32px;padding-bottom:48px;">
+{% block content %}
+<div class="container" style="padding-top:16px;padding-bottom:56px;">
 
   <div class="page-head" style="padding:0 0 24px;">
-    <span class="eyebrow">🤖 RESUME ON FILE</span>
+    <span class="eyebrow">RESUME ON FILE</span>
     <h1>Job recommendation dashboard</h1>
     <p class="lead">Every job in the database, ranked against your uploaded resume.</p>
   </div>
 
-  <div class="stat-row">
-    <div class="stat">
-      <div class="label">⭐ Top match</div>
-      <div class="value accent">{{ stats.top_match }}%</div>
-    </div>
-    <div class="stat">
-      <div class="label">📋 Recommendations</div>
-      <div class="value">{{ stats.total }}</div>
-    </div>
-    <div class="stat">
-      <div class="label">📊 Avg match</div>
-      <div class="value">{{ stats.average }}%</div>
-    </div>
-    <div class="stat">
-      <div class="label">📄 Resume</div>
-      <div class="value" style="font-size:1.1rem;">{{ stats.resume_status }}</div>
-    </div>
+  <div class="stat-row" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat"><div class="label">Top match</div><div class="value accent">{{ stats.top_match }}%</div></div>
+    <div class="stat"><div class="label">Recommendations</div><div class="value">{{ stats.total }}</div></div>
+    <div class="stat"><div class="label">Avg match</div><div class="value">{{ stats.average }}%</div></div>
+    <div class="stat"><div class="label">Resume</div><div class="value" style="font-size:1.05rem;">{{ stats.resume_status }}</div></div>
   </div>
 
   <div class="card">
@@ -66,21 +34,15 @@
         </div>
         <div>
           <label class="field-label">Company</label>
-          <select name="company" class="field">
-            <option value="">All companies</option>
-          </select>
+          <select name="company" class="field"><option value="">All companies</option></select>
         </div>
         <div>
           <label class="field-label">Location</label>
-          <select name="location" class="field">
-            <option value="">All locations</option>
-          </select>
+          <select name="location" class="field"><option value="">All locations</option></select>
         </div>
         <div>
           <label class="field-label">Source</label>
-          <select name="source" class="field">
-            <option value="">All sources</option>
-          </select>
+          <select name="source" class="field"><option value="">All sources</option></select>
         </div>
         <button class="btn btn-secondary">Apply filters</button>
       </form>
@@ -90,13 +52,7 @@
         <table class="data">
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Company</th>
-              <th>Position</th>
-              <th>Location</th>
-              <th>Match</th>
-              <th>Badge</th>
-              <th></th>
+              <th>Rank</th><th>Company</th><th>Position</th><th>Location</th><th>Match</th><th>Badge</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -108,7 +64,7 @@
               <td>{{ job.location }}</td>
               <td><span class="tag tag-lg {% if job.match_score >= 80 %}tag-good{% elif job.match_score >= 60 %}tag-mid{% else %}tag-low{% endif %}">{{ job.match_score }}%</span></td>
               <td>{{ job.badge }}</td>
-              <td><a href="/recommendation/{{ job.id }}" class="btn btn-ghost btn-sm">Details</a></td>
+              <td><a href="{{ url_for('recommendation_details', job_id=job.id) }}" class="btn btn-ghost btn-sm">Details</a></td>
             </tr>
             {% endfor %}
           </tbody>
@@ -119,7 +75,7 @@
         <div class="icon">📭</div>
         <h4>No recommendations yet</h4>
         <p>Upload a resume and the agent will rank every job in the database against it.</p>
-        <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary">🚀 Find my best jobs</a>
+        <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary">Find my best jobs</a>
       </div>
       {% endif %}
 
@@ -127,18 +83,4 @@
   </div>
 
 </div>
-
-<footer>
-  <div class="container foot-row">
-    <div class="stack">
-      <span class="pill">Flask</span>
-      <span class="pill">SQLite</span>
-      <span class="pill">LangChain</span>
-      <span class="pill">Google Gemini</span>
-    </div>
-    <div class="foot-small">© 2026 Raj Nagar — AI Job Agent</div>
-  </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}
