@@ -18,6 +18,7 @@ from auth.routes import auth_bp
 from database.models import Base
 from database.db import engine
 
+
 Base.metadata.create_all(bind=engine)
 
 def extract_text_from_pdf(filepath):

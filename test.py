@@ -1,38 +1,16 @@
 from database.db import SessionLocal
-from database.models import Job
-
-from ai.skill_extractor import extract_skills
-from ai.job_skill_extractor import extract_job_skills
-from ai.matcher import calculate_match_score
-
-resume = """
-Python
-FastAPI
-Flask
-Git
-SQL
-LangChain
-Machine Learning
-"""
-
-resume_skills = extract_skills(resume)
+from database.models import User, UserToken
 
 session = SessionLocal()
 
-job = session.query(Job).first()
+try:
+    deleted_tokens = session.query(UserToken).delete()
+    deleted_users = session.query(User).delete()
 
-print("Job:", job.title)
+    session.commit()
 
-job_skills = extract_job_skills(job)
+    print(f"Deleted {deleted_users} users")
+    print(f"Deleted {deleted_tokens} tokens")
 
-print("Resume Skills :", resume_skills)
-print("Job Skills    :", job_skills)
-
-result = calculate_match_score(
-    resume_skills,
-    job_skills
-)
-
-print(result)
-
-session.close()
+finally:
+    session.close()

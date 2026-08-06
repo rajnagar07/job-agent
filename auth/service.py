@@ -9,6 +9,30 @@ from auth.email_service import (
     send_verification_email
 )
 
+from auth.token_service import (
+    create_token,
+    RESET_PASSWORD
+)
+
+from auth.email_service import (
+    send_password_reset_email
+)
+
+from auth.token_service import (
+    verify_token,
+    delete_token,
+    RESET_PASSWORD
+)
+
+from auth.token_service import (
+    create_token,
+    VERIFY_EMAIL
+)
+
+from auth.email_service import (
+    send_verification_email
+)
+
 
 # =====================================================
 # Register User
@@ -156,6 +180,141 @@ def login_user(username, password):
         print("Login Error:", e)
 
         return False, "Something went wrong during login.", None
+
+    finally:
+
+        session.close()
+        
+
+def forgot_password(email):
+
+    session = SessionLocal()
+
+    try:
+
+        email = (email or "").strip().lower()
+
+        if not email:
+            return False, "Email is required."
+
+        user = (
+            session.query(User)
+            .filter_by(email=email)
+            .first()
+        )
+
+        # Don't reveal whether the email exists
+        if not user:
+            return (
+                True,
+                "If an account with that email exists, a password reset link has been sent."
+            )
+
+        token = create_token(
+            user.id,
+            RESET_PASSWORD
+        )
+
+        send_password_reset_email(
+            user,
+            token
+        )
+
+        return (
+            True,
+            "If an account with that email exists, a password reset link has been sent."
+        )
+
+    finally:
+
+        session.close()
+        
+def reset_password(token, new_password):
+
+    session = SessionLocal()
+
+    try:
+
+        print("Token:", token)
+
+        user_token = verify_token(
+            token,
+            RESET_PASSWORD
+        )
+
+        print("User Token:", user_token)
+
+        if not user_token:
+            return False, "Invalid or expired reset link."
+
+        user = session.get(
+            User,
+            user_token.user_id
+        )
+
+        print("User:", user)
+
+        if not user:
+            return False, "User not found."
+
+        user.set_password(new_password)
+
+        print("New Hash:", user.password_hash)
+
+        session.commit()
+
+        delete_token(token)
+
+        return True, "Password updated successfully."
+
+    except Exception as e:
+
+        session.rollback()
+
+        print(e)
+
+        return False, str(e)
+
+    finally:
+
+        session.close()
+        
+        
+
+def resend_verification_email(email):
+
+    session = SessionLocal()
+
+    try:
+
+        email = (email or "").strip().lower()
+
+        if not email:
+            return False, "Email is required."
+
+        user = (
+            session.query(User)
+            .filter_by(email=email)
+            .first()
+        )
+
+        if not user:
+            return False, "No account found with that email."
+
+        if user.email_verified:
+            return False, "Email is already verified."
+
+        token = create_token(
+            user.id,
+            VERIFY_EMAIL
+        )
+
+        send_verification_email(
+            user,
+            token
+        )
+
+        return True, "Verification email sent successfully."
 
     finally:
 

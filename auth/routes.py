@@ -18,8 +18,12 @@ from auth.token_service import (
 
 from auth.service import (
     register_user,
-    login_user
+    login_user,forgot_password, 
+    reset_password,
+    resend_verification_email
 )
+# from auth.service import forgot_password, reset_password, resend_verification_email
+
 
 auth_bp = Blueprint(
     "auth",
@@ -113,6 +117,26 @@ def verify_email(token):
     flash("Email verified successfully. Please login.")
 
     return redirect(url_for("auth.login"))
+
+# -----------------------------------
+# forget password
+# -----------------------------------
+
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password_route():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+
+        success, message = forgot_password(email)
+
+        flash(message)
+
+        if success:
+            return redirect(url_for("auth.login"))
+
+    return render_template("forgot_password.html")
 # -----------------------------------
 # Logout
 # -----------------------------------
@@ -125,3 +149,68 @@ def logout():
     flash("Logged out successfully.")
 
     return redirect(url_for("auth.login"))
+
+
+@auth_bp.route(
+    "/reset-password/<token>",
+    methods=["GET", "POST"]
+)
+def reset_password_route(token):
+
+    if request.method == "POST":
+
+        password = request.form.get("password")
+        confirm = request.form.get("confirm_password")
+
+        if password != confirm:
+
+            flash("Passwords do not match.")
+
+            return render_template(
+                "reset_password.html",
+                token=token
+            )
+
+        success, message = reset_password(
+            token,
+            password
+        )
+
+        flash(message)
+
+        if success:
+            return redirect(url_for("auth.login"))
+
+    return render_template(
+        "reset_password.html",
+        token=token
+    )
+
+
+@auth_bp.route(
+    "/resend-verification",
+    methods=["GET", "POST"]
+)
+def resend_verification():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+
+        success, message = resend_verification_email(
+            email
+        )
+
+        flash(
+            message,
+            "success" if success else "danger"
+        )
+
+        if success:
+            return redirect(
+                url_for("auth.login")
+            )
+
+    return render_template(
+        "resend_verification.html"
+    )
