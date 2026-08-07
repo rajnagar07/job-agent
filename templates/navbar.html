@@ -13,7 +13,7 @@
       <a href="{{ url_for('landing') }}#how-it-works">How it works</a>
 
       {% if session.get("user_id") %}
-        <a href="{{ url_for('recommendations') }}">Dashboard</a>
+        <a href="{{ url_for('index') }}">Dashboard</a>
         <a href="{{ url_for('auth.logout') }}">Logout</a>
         <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary btn-sm">Find my matches</a>
       {% else %}

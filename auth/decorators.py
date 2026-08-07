@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import session, redirect, url_for, flash
+from flask import session, redirect, url_for, flash, request
 
 
 def login_required(view):
@@ -9,9 +9,11 @@ def login_required(view):
 
         if "user_id" not in session:
 
-            flash("Please login first.")
+            flash("Please login first.", "warning")
 
-            return redirect(url_for("auth.login"))
+            return redirect(
+                url_for("auth.login", next=request.url)
+            )
 
         return view(*args, **kwargs)
 

@@ -84,6 +84,12 @@ def login():
 
             flash(message)
 
+            # Redirect back to the page the user originally wanted
+            next_page = request.args.get("next")
+
+            if next_page:
+                return redirect(next_page)
+
             return redirect(url_for("index"))
 
         flash(message)

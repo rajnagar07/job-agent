@@ -17,8 +17,8 @@ from services.recommendation_service import get_recommendations, get_dashboard_s
 from auth.routes import auth_bp
 from database.models import Base
 from database.db import engine
-
-
+from auth.decorators import login_required
+from database.models import User
 Base.metadata.create_all(bind=engine)
 
 def extract_text_from_pdf(filepath):
@@ -57,6 +57,12 @@ app.config["SECRET_KEY"] = os.getenv(
 )
 
 app.register_blueprint(auth_bp)
+
+# ===========================
+# Flask Login
+# ===========================
+
+
 
 # app.secret_key = os.getenv(
 #     "FLASK_SECRET_KEY",
@@ -117,6 +123,7 @@ def index():
 # Job Details
 # ===========================
 @app.route("/job/<int:job_id>")
+@login_required
 def job_details(job_id):
 
     session = SessionLocal()
@@ -144,6 +151,7 @@ def job_details(job_id):
 # Upload Resume
 # ===========================
 @app.route("/upload_resume/<int:job_id>", methods=["GET", "POST"])
+@login_required
 def upload_resume(job_id):
 
     session = SessionLocal()
@@ -222,6 +230,7 @@ def upload_resume(job_id):
         session.close()
 
 @app.route("/resume-analysis", methods=["GET", "POST"])
+@login_required
 def resume_analysis():
 
     if request.method == "POST":
@@ -298,6 +307,7 @@ def resume_analysis():
 # Recommend Jobs
 # ===========================
 @app.route("/recommend-jobs", methods=["GET", "POST"])
+@login_required
 def recommend_jobs():
 
     session = SessionLocal()
@@ -427,6 +437,7 @@ def recommend_jobs():
             os.remove(filepath)
         
 @app.route("/recommendations")
+@login_required
 def recommendations():
 
     min_score = request.args.get("min_score", type=int)
@@ -450,6 +461,7 @@ def recommendations():
     )
     
 @app.route("/recommendation/<int:job_id>")
+@login_required
 def recommendation_details(job_id):
 
     job = get_job(job_id)
