@@ -256,8 +256,23 @@ class ScrapeLog(Base):
         Integer,
         default=0
     )
+    expired_jobs = Column(
+    Integer,
+    default=0
+    )
+
+    errors = Column(
+        Integer,
+        default=0
+    )
+
+    error_message = Column(
+        Text,
+        nullable=True
+    )
 
     status = Column(
         String(20),
         default="running"
     )
+    
