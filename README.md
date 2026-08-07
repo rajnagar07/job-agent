@@ -1,235 +1,110 @@
 ﻿# 🤖 AI Job Agent
 
-An AI-powered **Job Aggregator and Career Assistant** built using **Python, Flask, SQLAlchemy, SQLite, LangChain, and Google Gemini**.
-
-AI Job Agent collects Software Engineering jobs from multiple sources, analyzes resumes using **Google Gemini**, intelligently matches candidate skills with job requirements, and generates AI-powered hiring insights through an interactive web dashboard.
-
-> 🚀 **Phase 2 Completed | Currently working on Phase 3 (Advanced Job Aggregation & Job Intelligence).**
+An AI-powered Job Aggregator and Career Assistant that automatically collects software engineering jobs, intelligently matches resumes using Google Gemini, and recommends the best opportunities through AI-powered analysis.
 
 ---
 
-# 🌟 Project Highlights
+## 🚀 Features
 
-- 🤖 AI-powered Resume Matching using Google Gemini
-- 📄 PDF Resume Parsing with PyMuPDF
-- 📊 AI-generated Match Score
-- 🎯 Matched & Missing Skills Analysis
-- 💡 Personalized AI Recommendations
-- 📝 Resume & Job Summaries
-- ✅ AI Hiring Verdict
-- 🔄 Rule-based Fallback when AI is unavailable
-- 💼 Software Engineering Job Aggregator
-- 🔍 Searchable Flask Dashboard
-- 🗄️ SQLite + SQLAlchemy Backend
-- 🧩 Modular Service-Oriented Architecture
-
----
-
-# ✨ Features
-
-## ✅ Implemented
-
-### 💼 Job Collection
+### 🔍 Job Aggregation
 - RemoteOK Integration
 - Wellfound Integration
-- Multi-source Scraper Architecture
-- Software Engineering Job Filtering
-- Duplicate Job Detection
-- SQLite Database
-- SQLAlchemy ORM
+- Greenhouse Integration
+- Multi-source Job Collection
+- Duplicate Detection
+- Hybrid Job Filtering
+- Job Lifecycle Management
+- Automatic Job Refresh
+- Scheduler Support
 
-### 🖥️ Dashboard
-- Flask Dashboard
-- Bootstrap 5 Responsive UI
-- Search Jobs
-- Job Details Page
-- Resume Upload Interface
-- AI Resume Analysis Report
-
-### 📄 Resume Processing
+### 🤖 AI Resume Intelligence
 - Resume Upload (PDF)
-- Resume Text Extraction using PyMuPDF
-
-### 🤖 AI Resume Matching
+- Resume Parsing (PyMuPDF)
+- Skill Extraction
+- Resume vs Job Matching
 - Google Gemini Integration
 - LangChain Integration
-- Resume vs Job AI Matching
 - AI Match Score
-- Matched Skills Detection
-- Missing Skills Detection
+- Matched Skills
+- Missing Skills
 - Resume Summary
 - Job Summary
-- AI-generated Strengths
+- AI Hiring Verdict
 - Personalized Recommendations
-- Hiring Verdict
-- Rule-based Fallback
+- Rule-Based Fallback
 
-### 🏗️ Architecture
-- Modular Service Layer
-- Environment Variables (.env)
-- Clean Project Structure
-- Scalable AI Components
+### 🔐 Authentication
+- Signup
+- Login
+- Logout
+- Email Verification
+- Forgot Password
+- Reset Password
+- Protected AI Features
+- Public Landing Page
+- Redirect After Login
 
----
-
-## 🚧 Planned
-
-- Greenhouse Integration
-- Lever Integration
-- Advanced Job Filtering
-- Dashboard Analytics
-- Resume Improvement Suggestions
-- AI Cover Letter Generator
-- Interview Question Generator
-- Daily Email Alerts
-- WhatsApp Notifications
-- Docker Deployment
-- PostgreSQL Support
+### 📊 Dashboard
+- Job Search
+- Job Details
+- Resume Analysis
+- AI Recommendations
+- Recommendation Engine
+- Dashboard Statistics
 
 ---
 
-# 🤖 AI Resume Analysis
-
-The AI analyzes your resume against a selected job description and generates:
-
-- 📊 Match Score
-- ✅ Matched Skills
-- ❌ Missing Skills
-- 📝 Resume Summary
-- 📄 Job Summary
-- 💪 Candidate Strengths
-- 💡 Personalized Recommendations
-- 🎯 Hiring Verdict
-
-> 📸 **Add AI Analysis Screenshot Here**
-
----
-
-# 📂 Project Structure
+# 🏗 Architecture
 
 ```text
-AI-Job-Agent/
-│
-├── ai/
-│   ├── chatmodel.py
-│   ├── prompts.py
-│   ├── matcher.py
-│   ├── skill_extractor.py
-│   └── job_skill_extractor.py
-│
-├── dashboard/
-│   ├── __init__.py
-│   ├── app.py
-│   └── templates/
-│
-├── database/
-│   ├── db.py
-│   ├── models.py
-│   └── save_jobs.py
-│
-├── jobs/
-│   ├── remoteok.py
-│   ├── wellfound.py
-│   └── utils.py
-│
-├── services/
-│   ├── job_service.py
-│   ├── resume_service.py
-│   └── matching_service.py
-│
-├── static/
-├── templates/
-├── uploads/
-├── config.py
-├── app.py
-├── requirements.txt
-└── README.md
+Job Sources
+      │
+      ▼
+Job Scrapers
+      │
+      ▼
+Hybrid Job Filter
+      │
+      ▼
+SQLite Database
+      │
+      ▼
+Recommendation Engine
+      │
+      ▼
+Google Gemini
+      │
+      ▼
+Flask Dashboard
 ```
 
 ---
 
-# 🏗️ Architecture
+# 🔄 Recommendation Workflow
 
 ```text
-                           Browser
-                              │
-                              ▼
-                     Flask Dashboard
-                              │
-                              ▼
-                        Flask Routes
-                              │
-                              ▼
-                       Service Layer
-          ┌───────────────────┴────────────────────┐
-          ▼                                        ▼
- Resume Processing                         Job Collection
-          │                                        │
-          ▼                                        ▼
-      PyMuPDF                               Job Scrapers
-          │                                        │
-          ▼                                        ▼
-    Resume Text                         Job Filtering & Storage
-          │                                        │
-          └───────────────────┬────────────────────┘
-                              ▼
-                     LangChain + Gemini
-                              │
-                              ▼
-                     AI Matching Engine
-                              │
-                              ▼
-                 Structured AI Analysis (JSON)
-                              │
-                              ▼
-                     SQLite Database
-                              │
-                              ▼
-                       Web Dashboard
-```
-
----
-
-# 🔄 Workflow
-
-```text
-Collect Jobs
-      │
-      ▼
-Filter Jobs
-      │
-      ▼
-Store in SQLite
-      │
-      ▼
-Dashboard
-      │
-      ▼
-Select Job
-      │
-      ▼
-Upload Resume
+Resume Upload
       │
       ▼
 Extract Resume Text
       │
       ▼
-Google Gemini AI
+Extract Skills
       │
       ▼
-Resume vs Job Analysis
+Compare with ALL Active Jobs
       │
       ▼
-Generate
-
-• Match Score
-• Matched Skills
-• Missing Skills
-• Resume Summary
-• Job Summary
-• Strengths
-• Recommendations
-• Hiring Verdict
+Fast Rule-Based Matching
+      │
+      ▼
+Rank Jobs
+      │
+      ▼
+Top Recommendations
+      │
+      ▼
+Gemini Deep Analysis
       │
       ▼
 Display AI Report
@@ -237,165 +112,103 @@ Display AI Report
 
 ---
 
-# 🤖 AI Pipeline
+# 📁 Project Structure
 
 ```text
-Resume PDF
-      │
-      ▼
-PyMuPDF
-      │
-      ▼
-Resume Text
-      │
-      ▼
-Job Details
-      │
-      ▼
-LangChain Prompt
-      │
-      ▼
-Google Gemini
-      │
-      ▼
-AI Resume Matching
-      │
-      ▼
-Generate JSON
-
-{
- Match Score
- Matched Skills
- Missing Skills
- Resume Summary
- Job Summary
- Strengths
- Recommendations
- Verdict
-}
-      │
-      ▼
-Display Results
+AI-Job-Agent/
+│
+├── ai/
+├── auth/
+├── dashboard/
+├── database/
+├── jobs/
+├── services/
+├── static/
+├── templates/
+├── uploads/
+├── config.py
+├── app.py
+└── requirements.txt
 ```
 
 ---
 
-# 🛠️ Tech Stack
+# 🛠 Tech Stack
 
-## Backend
-
+### Backend
 - Python
 - Flask
+- SQLAlchemy
 
-## AI / Generative AI
-
+### AI
 - Google Gemini
 - LangChain
 - Prompt Engineering
 
-## Database
-
+### Database
 - SQLite
-- SQLAlchemy
 
-## Frontend
-
-- HTML5
-- Bootstrap 5
-- CSS3
-- Jinja2
-
-## Resume Processing
-
+### Resume Processing
 - PyMuPDF
 
-## Web Scraping
-
+### Web Scraping
+- BeautifulSoup
 - Requests
-- BeautifulSoup4
 - lxml
 
-## Utilities
+### Frontend
+- HTML
+- CSS
+- Bootstrap 5
+- Jinja2
 
+### Utilities
+- APScheduler
 - python-dotenv
-- Regular Expressions
+- Regex
 
 ---
 
-# 🚀 Installation
-
-## Clone Repository
+# ⚙️ Installation
 
 ```bash
-git clone https://github.com/yourusername/AI-Job-Agent.git
+git clone https://github.com/<your-username>/AI-Job-Agent.git
 
 cd AI-Job-Agent
-```
 
----
-
-## Create Virtual Environment
-
-```bash
 python -m venv venv
-```
 
-### Windows
-
-```bash
+# Windows
 venv\Scripts\activate
-```
 
-### Linux/macOS
-
-```bash
+# Linux/macOS
 source venv/bin/activate
-```
 
----
-
-## Install Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
----
-
-## Configure Environment Variables
-
-Create a `.env` file in the project root.
+Create a `.env`
 
 ```env
-GOOGLE_API_KEY=your_gemini_api_key
-
-FLASK_SECRET_KEY=your_secret_key
+GOOGLE_API_KEY=your_key
+FLASK_SECRET_KEY=your_secret
+EMAIL=your_email
+EMAIL_PASSWORD=your_password
 ```
 
----
-
-## Collect Jobs
+Collect jobs
 
 ```bash
 python app.py
 ```
 
-This will:
-
-- Collect jobs
-- Filter Software Engineering jobs
-- Remove duplicates
-- Store jobs in SQLite
-
----
-
-## Run Dashboard
+Run dashboard
 
 ```bash
 python -m dashboard.app
 ```
 
-Open:
+Open
 
 ```
 http://127.0.0.1:5000
@@ -403,116 +216,39 @@ http://127.0.0.1:5000
 
 ---
 
-# 📌 Development Progress
+# ✅ Current Features
 
-## ✅ Phase 1
-
-- Project Setup
-- SQLite Database
-- SQLAlchemy ORM
-- RemoteOK Integration
-- Wellfound Integration
-- Job Filtering
-- Duplicate Detection
-- Flask Dashboard
-- Bootstrap UI
-- Resume Upload
-- Resume Text Extraction
+- Multi-source Job Aggregation
+- AI Resume Matching
+- Hybrid Job Filtering
+- Recommendation Engine
+- Authentication System
+- Email Verification
+- Forgot Password
+- Job Lifecycle
+- Automatic Refresh
+- Dashboard
+- Scheduler
 
 ---
 
-## ✅ Phase 2
+# 🚀 Upcoming Features
 
-- LangChain Integration
-- Google Gemini Integration
-- Resume vs Job AI Matching
-- AI Match Score
-- Matched Skills Detection
-- Missing Skills Detection
-- Resume Summary
-- Job Summary
-- AI-generated Strengths
-- AI-generated Recommendations
-- Hiring Verdict
-- Rule-based Fallback
-
----
-
-# 🗺️ Roadmap
-
-## 🚀 Phase 3 (Current)
-
-- Greenhouse Integration
-- Lever Integration
-- Advanced Job Filtering
-- Dashboard Analytics
-- Job Sorting
-- Job Deduplication Improvements
-
----
-
-## 🚀 Phase 4
-
-- Resume Improvement Suggestions
-- AI Cover Letter Generator
-- Interview Question Generator
-- Company Skill Analysis
-
----
-
-## 🚀 Phase 5
-
+- Saved Resume
+- Saved Jobs
+- Recommendation History
+- ATS Resume Score
+- AI Cover Letter
+- Interview Questions
 - Daily Email Alerts
 - WhatsApp Notifications
-- Scheduler
-- Saved Jobs
-
----
-
-## 🚀 Phase 6
-
-- PostgreSQL Migration
+- PostgreSQL
 - Docker
-- GitHub Actions
-- CI/CD
-- Cloud Deployment
+- ChromaDB
+- Semantic Search
+- Career Chatbot
 
 ---
-
-## 🚀 Phase 7
-
-- RAG with ChromaDB
-- Semantic Job Search
-- AI Career Coach
-- Personalized Learning Roadmap
-
----
-
-# 🎯 Future Vision
-
-AI Job Agent aims to become a complete AI-powered career platform that helps users throughout their job search journey by:
-
-- Collecting jobs from multiple platforms
-- Matching resumes with job descriptions using AI
-- Identifying missing skills
-- Suggesting resume improvements
-- Generating AI-powered cover letters
-- Creating interview preparation questions
-- Tracking job applications
-- Sending personalized job alerts
-- Providing AI-driven career guidance
-
-
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to your branch
-5. Open a Pull Request
 
 # 👨‍💻 Author
 
@@ -520,9 +256,6 @@ Contributions are welcome!
 
 MCA Student | Python Backend Developer | GenAI Enthusiast
 
-
 ---
 
-# ⭐ Support
-
-If you found this project useful, please consider giving it a ⭐ on GitHub. It helps others discover the project and motivates further development.
+⭐ If you found this project useful, consider giving it a star on GitHub.

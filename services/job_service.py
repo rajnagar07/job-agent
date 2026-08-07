@@ -1,36 +1,71 @@
+import logging
 from datetime import datetime
 
 from database.db import SessionLocal
 from database.models import ScrapeLog
 from database.save_jobs import save_jobs
+
 from services.lifecycle_service import expire_old_jobs
+from jobs.utils import filter_jobs
 
 from jobs.remoteok import get_jobs as remote_jobs
 from jobs.wellfound import get_jobs as wellfound_jobs
 from jobs.greenhouse import get_all_jobs
 
+logger = logging.getLogger(__name__)
+
+
+# =====================================================
+# Collect Jobs From All Sources
+# =====================================================
 
 def collect_jobs():
+
     jobs = []
 
-    print("Collecting jobs from RemoteOK...")
-    jobs.extend(remote_jobs())
+    sources = [
+        ("RemoteOK", remote_jobs),
+        ("Wellfound", wellfound_jobs),
+        ("Greenhouse", get_all_jobs),
+    ]
 
-    print("Collecting jobs from Wellfound...")
-    jobs.extend(wellfound_jobs())
+    for source_name, scraper in sources:
 
-    print("Collecting jobs from Greenhouse...")
-    jobs.extend(get_all_jobs())
+        try:
+
+            logger.info(f"Collecting jobs from {source_name}...")
+
+            source_jobs = scraper()
+
+            logger.info(
+                f"{source_name}: {len(source_jobs)} jobs collected."
+            )
+
+            jobs.extend(source_jobs)
+
+        except Exception as e:
+
+            logger.exception(
+                f"{source_name} scraper failed: {e}"
+            )
+
+    logger.info(f"Total Collected Jobs: {len(jobs)}")
 
     return jobs
 
+
+# =====================================================
+# Complete Scraper Pipeline
+# =====================================================
 
 def run_job_collection():
 
     session = SessionLocal()
 
+    start_time = datetime.utcnow()
+
     scrape_log = ScrapeLog(
-        started_at=datetime.utcnow(),
+        started_at=start_time,
         status="running"
     )
 
@@ -39,17 +74,44 @@ def run_job_collection():
 
     try:
 
-        jobs = run_job_collection()
+        # ----------------------------------------
+        # Collect Jobs
+        # ----------------------------------------
+
+        jobs = collect_jobs()
+
         scrape_log.jobs_found = len(jobs)
 
+        # ----------------------------------------
+        # Filter Jobs
+        # ----------------------------------------
+
+        filtered_jobs = filter_jobs(jobs)
+
+        logger.info(
+            f"Filtered Jobs: {len(filtered_jobs)}"
+        )
+
+        # ----------------------------------------
+        # Save Jobs
+        # ----------------------------------------
+
         new_jobs, updated_jobs = save_jobs(
-            jobs,
+            filtered_jobs,
             scrape_log.id
         )
+
+        # ----------------------------------------
+        # Expire Old Jobs
+        # ----------------------------------------
 
         expired_jobs = expire_old_jobs(
             scrape_log.id
         )
+
+        # ----------------------------------------
+        # Update Scrape Log
+        # ----------------------------------------
 
         scrape_log.new_jobs = new_jobs
         scrape_log.updated_jobs = updated_jobs
@@ -59,17 +121,22 @@ def run_job_collection():
         scrape_log.status = "success"
 
         session.commit()
-        
-        
-        #for testing 
-        print("\n========== Scrape Summary ==========")
-        print(f"Jobs Found   : {scrape_log.jobs_found}")
-        print(f"New Jobs     : {new_jobs}")
-        print(f"Updated Jobs : {updated_jobs}")
-        print(f"Expired Jobs : {expired_jobs}")
-        print("====================================\n")
 
-        return jobs
+        duration = (
+            scrape_log.finished_at - start_time
+        ).total_seconds()
+
+        logger.info("=" * 60)
+        logger.info("Daily Scrape Summary")
+        logger.info(f"Collected Jobs : {len(jobs)}")
+        logger.info(f"Filtered Jobs  : {len(filtered_jobs)}")
+        logger.info(f"New Jobs       : {new_jobs}")
+        logger.info(f"Updated Jobs   : {updated_jobs}")
+        logger.info(f"Expired Jobs   : {expired_jobs}")
+        logger.info(f"Duration       : {duration:.2f} sec")
+        logger.info("=" * 60)
+
+        return filtered_jobs
 
     except Exception as e:
 
@@ -81,6 +148,8 @@ def run_job_collection():
         scrape_log.error_message = str(e)
 
         session.commit()
+
+        logger.exception("Job collection failed.")
 
         raise
 

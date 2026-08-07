@@ -80,13 +80,33 @@ def match_resume_with_all_jobs(resume_path):
     session.commit()
     session.close()
     
-def fast_match_resume_with_job(
-    resume_skills,
-    job
-):
+# def fast_match_resume_with_job(
+#     resume_skills,
+#     job
+# ):
+
+def fast_match_resume_with_job(resume_skills, job):
+
+    print("="*60)
+    print("JOB:", job.title)
 
     job_skills = extract_job_skills(job)
 
+    print("Resume Skills:", resume_skills)
+    print("Job Skills:", job_skills)
+
+    result = calculate_match_score(
+        resume_skills,
+        job_skills
+    )
+
+    print("Result:", result)
+
+    result["method"] = "Rule Based"
+
+    return result
+
+    job_skills = job.skills
     result = calculate_match_score(
         resume_skills,
         job_skills

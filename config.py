@@ -85,3 +85,9 @@ GREENHOUSE_COMPANIES = [
     "rippling",
     "figma"
 ]
+
+# =====================================
+# Hybrid Job Filter Thresholds
+# =====================================
+JOB_FILTER_ACCEPT_THRESHOLD = 80
+JOB_FILTER_REJECT_THRESHOLD = 20

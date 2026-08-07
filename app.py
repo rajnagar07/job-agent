@@ -1,53 +1,44 @@
-from database.models import Base
+import logging
+
 from database.db import engine
+from database.models import Base
+from services.job_service import run_job_collection
 
-from services.job_service import collect_jobs
-from jobs.utils import filter_jobs
+# =====================================================
+# Logging Configuration
+# =====================================================
 
-from database.save_jobs import save_jobs
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
 
-from services.scrape_log import start_scrape, finish_scrape
-from services.job_lifecycle import expire_jobs
-from services.job_cleanup import delete_expired_jobs
+logger = logging.getLogger(__name__)
+
+# =====================================================
+# Create Database Tables
+# =====================================================
 
 Base.metadata.create_all(bind=engine)
 
+# =====================================================
+# Entry Point
+# =====================================================
 
 def run_scraper():
 
-    print("=" * 60)
-    print("Running Daily Job Scraper")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("AI Job Agent - Daily Job Scraper")
+    logger.info("=" * 60)
 
-    scrape_id = start_scrape(
-        "RemoteOK + Wellfound + Greenhouse"
-    )
+    jobs = run_job_collection()
 
-    jobs = collect_jobs()
+    logger.info("=" * 60)
+    logger.info("Scraping Completed Successfully")
+    logger.info("Total Jobs Saved : %s", len(jobs))
+    logger.info("=" * 60)
 
-    print(f"Collected Jobs : {len(jobs)}")
-
-    jobs = filter_jobs(jobs)
-
-    print(f"Filtered Jobs : {len(jobs)}")
-
-    new_jobs, updated_jobs = save_jobs(
-        jobs,
-        scrape_id
-    )
-
-    expire_jobs(scrape_id)
-
-    delete_expired_jobs()
-
-    finish_scrape(
-        scrape_id=scrape_id,
-        jobs_found=len(jobs),
-        new_jobs=new_jobs,
-        updated_jobs=updated_jobs
-    )
-
-    print("Daily Scrape Completed")
+    return jobs
 
 
 if __name__ == "__main__":

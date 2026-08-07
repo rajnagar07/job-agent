@@ -158,6 +158,10 @@ class Job(Base):
         String,
         nullable=False
     )
+    skills = Column(
+    Text,
+    nullable=True
+    )
 
     location = Column(String)
 
@@ -275,4 +279,40 @@ class ScrapeLog(Base):
         String(20),
         default="running"
     )
+    
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    job_id = Column(
+        Integer,
+        ForeignKey("jobs.id"),
+        nullable=False
+    )
+
+    match_score = Column(
+        Integer,
+        default=0
+    )
+
+    matched_skills = Column(Text)
+
+    missing_skills = Column(Text)
+
+    reason = Column(Text)
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    job = relationship("Job")
+    user = relationship("User")
     
