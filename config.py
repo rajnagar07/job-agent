@@ -82,6 +82,15 @@ DATABASE_URL = os.getenv(
     "sqlite:///jobs.db"
 )
 
+# Render PostgreSQL uses psycopg 3
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://",
+        "postgresql+psycopg://",
+        1
+    )
+
+
 
 # ============================================================
 # Job Sources
