@@ -1,32 +1,40 @@
-# Virtual Environment
+# Environment variables
+.env
+
+# Virtual environments
 ven/
+venv/
 .venv/
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-
-# Environment Variables
-.env
+*$py.class
 
 # Database
 *.db
+*.sqlite
 *.sqlite3
+jobs.db
 
-# Uploaded Files
-uploads/
-
+# Uploaded resumes
 uploads/*
 !uploads/.gitkeep
+
+# Flask
+instance/
 
 # IDE
 .vscode/
 .idea/
 
-# OS Files
+# Logs
+*.log
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Temporary files
+*.tmp
+*.temp

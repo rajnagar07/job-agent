@@ -185,7 +185,10 @@ class Job(Base):
         Integer,
         default=0
     )
-
+    filter_score = Column(
+        Integer,
+        default=0
+    )
     # -----------------------------
     # Lifecycle
     # -----------------------------
