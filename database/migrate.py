@@ -1,29 +1,14 @@
-import sqlite3
+from database.db import engine, Base
+from database import models
 
-DB_PATH = "jobs.db"
 
-conn = sqlite3.connect(DB_PATH)
+def migrate():
+    print("Creating database tables...")
 
-try:
-    cursor = conn.cursor()
+    Base.metadata.create_all(bind=engine)
 
-    cursor.execute("PRAGMA table_info(jobs)")
-    columns = [row[1] for row in cursor.fetchall()]
+    print("Database tables created successfully.")
 
-    if "filter_score" not in columns:
-        cursor.execute(
-            """
-            ALTER TABLE jobs
-            ADD COLUMN filter_score INTEGER DEFAULT 0
-            """
-        )
 
-        conn.commit()
-
-        print("Added filter_score column successfully.")
-
-    else:
-        print("filter_score already exists.")
-
-finally:
-    conn.close()
+if __name__ == "__main__":
+    migrate()
