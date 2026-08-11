@@ -695,6 +695,7 @@ def recommendation_details(job_id):
 
 
 @app.route("/run-scraper")
+@login_required
 def run_scraper_route():
 
     def scraper_task():
