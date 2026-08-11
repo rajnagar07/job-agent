@@ -21,6 +21,8 @@ from database.db import engine
 from auth.decorators import login_required
 from database.models import User
 import logging
+import threading
+
 
 logger = logging.getLogger(__name__)
 Base.metadata.create_all(bind=engine)
@@ -692,7 +694,6 @@ def recommendation_details(job_id):
 # ===========================
 
 @app.route("/run-scraper")
-@login_required
 def run_scraper():
 
     def scraper_task():
