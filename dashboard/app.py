@@ -12,6 +12,7 @@ from services.matching_service import (
     fast_match_resume_with_job,
     ai_match_resume_with_job,
 )
+from services.job_service import run_job_collection
 from ai.skill_extractor import extract_skills
 from services.recommendation_service import get_recommendations, get_dashboard_stats,get_job,get_badge
 from auth.routes import auth_bp
@@ -682,6 +683,36 @@ def recommendation_details(job_id):
         "recommendation_details.html",
         job=job
     )
+    
+# ===========================
+# Run Job Scraper
+# ===========================
+
+@app.route("/run-scraper")
+@login_required
+def run_scraper():
+
+    try:
+
+        jobs = run_job_collection()
+
+        flash(
+            f"Job scraping completed successfully. "
+            f"{len(jobs)} jobs collected.",
+            "success"
+        )
+
+    except Exception as e:
+
+        import traceback
+        traceback.print_exc()
+
+        flash(
+            f"Job scraping failed: {str(e)}",
+            "danger"
+        )
+
+    return redirect(url_for("index"))
 # ===========================
 # Run Application
 # ===========================
