@@ -694,23 +694,25 @@ def recommendation_details(job_id):
 # ===========================
 
 @app.route("/run-scraper")
-def run_scraper():
+@app.route("/run-scraper")
+def run_scraper_route():
 
     def scraper_task():
+
         try:
-            logger.info("========== BACKGROUND SCRAPER STARTED ==========")
+            logger.info("=" * 60)
+            logger.info("BACKGROUND SCRAPER STARTED")
+            logger.info("=" * 60)
 
             jobs = run_job_collection()
 
             logger.info(
-                "========== BACKGROUND SCRAPER FINISHED: %s JOBS ==========",
+                "BACKGROUND SCRAPER FINISHED: %s JOBS",
                 len(jobs)
             )
 
         except Exception:
-            logger.exception(
-                "========== BACKGROUND SCRAPER FAILED =========="
-            )
+            logger.exception("BACKGROUND SCRAPER FAILED")
 
     thread = threading.Thread(
         target=scraper_task,
@@ -719,12 +721,11 @@ def run_scraper():
 
     thread.start()
 
-    flash(
-        "Job scraper started. Jobs will appear shortly.",
-        "success"
-    )
-
-    return redirect(url_for("jobs"))# ===========================
+    return """
+        <h2>Job scraper started successfully.</h2>
+        <p>The scraper is running in the background.</p>
+        <p>Wait a few minutes and then open the Jobs page.</p>
+    """# ===========================
 # Run Application
 # ===========================
 if __name__ == "__main__":
