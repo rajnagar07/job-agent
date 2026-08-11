@@ -90,6 +90,8 @@ def register_user(name, email, phone, password):
             name=name,
             email=email if email else None,
             phone=phone if phone else None,
+            email_verified=True  # this will be change after purchasing the domain
+
         )
 
         user.set_password(password)
@@ -98,21 +100,21 @@ def register_user(name, email, phone, password):
         session.commit()
         
         session.refresh(user)
+        # this is for production receving the email from the resend email
+        # verification_token = create_token(
+        #     user.id,
+        #     VERIFY_EMAIL
+        # )
 
-        verification_token = create_token(
-            user.id,
-            VERIFY_EMAIL
-        )
+        # send_verification_email(
+        #     user,
+        #     verification_token
+        # )
 
-        send_verification_email(
-            user,
-            verification_token
-        )
-
-        return True, (
-            "Registration successful. "
-            "Please check your email to verify your account."
-        )
+        # return True, (
+        #     "Registration successful. "
+        #     "Please check your email to verify your account."
+        # )
     except Exception as e:
 
             session.rollback()
@@ -163,12 +165,14 @@ def login_user(username, password):
         if not user:
             return False, "Account not found.", None
         
-        if user.email and not user.email_verified:
-            return (
-                False,
-                "Please verify your email before logging in.",
-                None
-            )
+        
+        # this is also with the real production
+        # if user.email and not user.email_verified:
+        #     return (
+        #         False,
+        #         "Please verify your email before logging in.",
+        #         None
+        #     )
 
         if not user.check_password(password):
             return False, "Invalid password.", None
