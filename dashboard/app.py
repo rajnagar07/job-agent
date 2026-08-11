@@ -693,7 +693,7 @@ def recommendation_details(job_id):
 # Run Job Scraper
 # ===========================
 
-@app.route("/run-scraper")
+
 @app.route("/run-scraper")
 def run_scraper_route():
 
@@ -725,7 +725,7 @@ def run_scraper_route():
         <h2>Job scraper started successfully.</h2>
         <p>The scraper is running in the background.</p>
         <p>Wait a few minutes and then open the Jobs page.</p>
-    """# ===========================
+# ===========================
 # Run Application
 # ===========================
 if __name__ == "__main__":
