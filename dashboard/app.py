@@ -20,6 +20,9 @@ from database.models import Base
 from database.db import engine
 from auth.decorators import login_required
 from database.models import User
+import logging
+
+logger = logging.getLogger(__name__)
 Base.metadata.create_all(bind=engine)
 
 def extract_text_from_pdf(filepath):
@@ -692,28 +695,35 @@ def recommendation_details(job_id):
 @login_required
 def run_scraper():
 
-    try:
+    def scraper_task():
+        try:
+            logger.info("========== BACKGROUND SCRAPER STARTED ==========")
 
-        jobs = run_job_collection()
+            jobs = run_job_collection()
 
-        flash(
-            f"Job scraping completed successfully. "
-            f"{len(jobs)} jobs collected.",
-            "success"
-        )
+            logger.info(
+                "========== BACKGROUND SCRAPER FINISHED: %s JOBS ==========",
+                len(jobs)
+            )
 
-    except Exception as e:
+        except Exception:
+            logger.exception(
+                "========== BACKGROUND SCRAPER FAILED =========="
+            )
 
-        import traceback
-        traceback.print_exc()
+    thread = threading.Thread(
+        target=scraper_task,
+        daemon=True
+    )
 
-        flash(
-            f"Job scraping failed: {str(e)}",
-            "danger"
-        )
+    thread.start()
 
-    return redirect(url_for("index"))
-# ===========================
+    flash(
+        "Job scraper started. Jobs will appear shortly.",
+        "success"
+    )
+
+    return redirect(url_for("jobs"))# ===========================
 # Run Application
 # ===========================
 if __name__ == "__main__":
