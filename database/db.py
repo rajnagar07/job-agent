@@ -7,13 +7,34 @@ from config import DATABASE_URL
 # ============================================================
 # Database Engine
 # ============================================================
+# ============================================================
+# Database Engine
+# ============================================================
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False
-    } if DATABASE_URL.startswith("sqlite") else {}
-)
+if DATABASE_URL.startswith("sqlite"):
+
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={
+            "check_same_thread": False
+        }
+    )
+
+else:
+
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_timeout=30,
+        connect_args={
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
+        }
+    )
 
 
 # ============================================================
