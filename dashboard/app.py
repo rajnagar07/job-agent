@@ -694,37 +694,44 @@ def recommendation_details(job_id):
 # ===========================
 
 
+# ===========================
+# Run Job Scraper
+# ===========================
+
 @app.route("/run-scraper")
 def run_scraper_route():
 
-    def scraper_task():
+    logger.info("=" * 60)
+    logger.info("SCRAPER STARTED")
+    logger.info("=" * 60)
 
-        try:
-            logger.info("=" * 60)
-            logger.info("BACKGROUND SCRAPER STARTED")
-            logger.info("=" * 60)
+    try:
 
-            jobs = run_job_collection()
+        jobs = run_job_collection()
 
-            logger.info(
-                "BACKGROUND SCRAPER FINISHED: %s JOBS",
-                len(jobs)
-            )
+        logger.info("=" * 60)
+        logger.info("SCRAPER FINISHED")
+        logger.info("TOTAL JOBS: %s", len(jobs))
+        logger.info("=" * 60)
 
-        except Exception:
-            logger.exception("BACKGROUND SCRAPER FAILED")
+        return f"""
+        <h2>Scraper completed successfully.</h2>
+        <p>Total jobs collected: {len(jobs)}</p>
+        <p><a href="/jobs">Go to Jobs Dashboard</a></p>
+        """
 
-    thread = threading.Thread(
-        target=scraper_task,
-        daemon=True
-    )
+    except Exception as e:
 
-    thread.start()
+        logger.exception("SCRAPER FAILED")
 
-    return """
-        <h2>Job scraper started successfully.</h2>
-        <p>The scraper is running in the background.</p>
-        <p>Wait a few minutes and then open the Jobs page.</p>
+        return f"""
+        <h2>Scraper failed.</h2>
+        <pre>{e}</pre>
+        """, 500
+        
+@app.route("/health")
+def health():
+    return "OK", 200
 # ===========================
 # Run Application
 # ===========================
