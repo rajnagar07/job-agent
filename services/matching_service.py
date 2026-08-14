@@ -444,7 +444,7 @@ def ai_rerank_recommendations(
     ai_recommendations = []
 
     # Only send Top 20 to Gemini
-    top_candidates = recommendations[:20]
+    top_candidates = recommendations[:10]
 
     for item in top_candidates:
 
@@ -631,4 +631,4 @@ def ai_rerank_recommendations(
     # RETURN TOP 20
     # =========================================
 
-    return ai_recommendations[:20]
+    return ai_recommendations[:10]
