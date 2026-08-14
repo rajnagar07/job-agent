@@ -938,7 +938,9 @@ def classify_job_with_gemini(
 # ============================================================
 
 def safe_classify_job_with_gemini(
-    job: Mapping[str, Any]
+    job: Mapping[str, Any],
+    score: int,
+    rule_result: Mapping[str, Any],
 ) -> Dict[str, Any] | None:
 
     global _gemini_review_count
@@ -947,20 +949,45 @@ def safe_classify_job_with_gemini(
     # Prevent excessive Gemini API calls
     # --------------------------------------------------------
 
+    # ========================================================
+# BORDERLINE → GEMINI
+# ========================================================
+
     if _gemini_review_count >= MAX_GEMINI_REVIEWS:
 
-        logger.warning(
-            "Gemini review limit reached (%s). "
-            "Using rule-based fallback.",
-            MAX_GEMINI_REVIEWS
-        )
+        # Gemini budget exhausted.
+        # Use rule-based fallback directly.
+        fallback_keep = score >= 50
 
-        return None
+        return {
+            **dict(job),
+
+            "software_job": fallback_keep,
+
+            "decision": (
+                "accept"
+                if fallback_keep
+                else "reject"
+            ),
+
+            "filter_stage": "rule_fallback",
+
+            "filter_score": score,
+
+            "confidence": score,
+
+            "reason": (
+                "Gemini review limit reached; "
+                "decision made using rule-based fallback."
+            ),
+
+            "signals": rule_result["signals"],
+        }
 
     # Count this actual Gemini attempt
     _gemini_review_count += 1
 
-    logger.info(
+    logger.debug(
         "Gemini API review %s/%s | title=%s",
         _gemini_review_count,
         MAX_GEMINI_REVIEWS,
@@ -1076,7 +1103,9 @@ def evaluate_job(
 
     gemini_result = (
         safe_classify_job_with_gemini(
-            normalized
+            normalized,
+            score,
+            rule_result,
         )
     )
 
@@ -1226,7 +1255,7 @@ def filter_jobs(
 
                 gemini_rejects += 1
 
-        logger.info(
+        logger.debug(
             "Job filter decision | "
             "title=%s | score=%s | "
             "stage=%s | keep=%s | "
@@ -1266,7 +1295,7 @@ def filter_jobs(
                 decision
             )
 
-    logger.info(
+    logger.debug(
         "Hybrid job filter summary | "
         "total=%s | selected=%s | "
         "rule_accepts=%s | "
