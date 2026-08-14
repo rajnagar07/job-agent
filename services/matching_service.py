@@ -256,7 +256,7 @@ def match_resume_with_all_jobs(
                 for item in recommendations
                 if item["score"] >= 40
         ]
-        top_20 = recommendations[:20]
+        top_20 = recommendations[:10]
 
         print(
             "TOP 20 CANDIDATES → SENDING TO GEMINI"
