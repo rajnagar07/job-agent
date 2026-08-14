@@ -256,7 +256,7 @@ def match_resume_with_all_jobs(
                 for item in recommendations
                 if item["score"] >= 40
         ]
-        top_20 = recommendations[:10]
+        top_20 = recommendations[:5]
 
         print(
             "TOP 20 CANDIDATES → SENDING TO GEMINI"
@@ -444,7 +444,7 @@ def ai_rerank_recommendations(
     ai_recommendations = []
 
     # Only send Top 20 to Gemini
-    top_candidates = recommendations[:10]
+    top_candidates = recommendations[:5]
 
     for item in top_candidates:
 
@@ -631,4 +631,4 @@ def ai_rerank_recommendations(
     # RETURN TOP 20
     # =========================================
 
-    return ai_recommendations[:10]
+    return ai_recommendations[:5]
