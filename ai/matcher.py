@@ -4,24 +4,47 @@ from ai.chatmodel import chat_model
 from ai.prompts import match_prompt
 
 
+
 def calculate_match_score(resume_skills, job_skills):
 
-    resume = set(skill.lower() for skill in resume_skills)
-    job = set(skill.lower() for skill in job_skills)
+    # Normalize skills
+    resume = {
+        skill.strip().lower()
+        for skill in resume_skills
+        if skill and skill.strip()
+    }
+
+    job = {
+        skill.strip().lower()
+        for skill in job_skills
+        if skill and skill.strip()
+    }
+
+    # No job skills
+    if not job:
+        return {
+            "score": 0,
+            "matched": [],
+            "missing": [],
+        }
 
     matched = resume.intersection(job)
     missing = job - resume
 
-    if not job:
-        score = 0
-    else:
-        score = int((len(matched) / len(job)) * 100)
+    # Skill coverage
+    skill_score = (
+        len(matched) / len(job)
+    ) * 100
+
+    score = round(skill_score)
 
     return {
         "score": score,
         "matched": sorted(matched),
         "missing": sorted(missing),
     }
+
+
 def match_resume_with_ai(resume_text, job_description):
 
     chain = match_prompt | chat_model

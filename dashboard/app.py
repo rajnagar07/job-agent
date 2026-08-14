@@ -10,7 +10,7 @@ from ai.resume_analyzer import analyze_resume_with_ai
 from services.matching_service import (
     match_resume_with_job,
     fast_match_resume_with_job,
-    ai_match_resume_with_job,
+    ai_match_resume_with_job,match_resume_with_all_jobs
 )
 from services.job_service import run_job_collection
 from ai.skill_extractor import extract_skills
@@ -318,65 +318,42 @@ def resume_analysis():
 @login_required
 def recommend_jobs():
 
-    session = SessionLocal()
     filepath = None
 
     try:
-
-        # ====================================================
-        # SHOW UPLOAD PAGE
-        # ====================================================
 
         if request.method == "GET":
             return render_template(
                 "recommend_jobs.html"
             )
 
-        # ====================================================
-        # VALIDATE RESUME
-        # ====================================================
-
+        # Validate upload
         if "resume" not in request.files:
-
             flash(
                 "Please upload your resume.",
                 "danger"
             )
-
-            return redirect(
-                request.url
-            )
+            return redirect(request.url)
 
         file = request.files["resume"]
 
         filename = file.filename or ""
 
-        if filename == "":
-
+        if not filename:
             flash(
                 "Please select your resume.",
                 "warning"
             )
-
-            return redirect(
-                request.url
-            )
+            return redirect(request.url)
 
         if not filename.lower().endswith(".pdf"):
-
             flash(
                 "Only PDF files are allowed.",
                 "danger"
             )
+            return redirect(request.url)
 
-            return redirect(
-                request.url
-            )
-
-        # ====================================================
-        # SAVE RESUME
-        # ====================================================
-
+        # Save resume
         filename = f"{uuid.uuid4()}.pdf"
 
         filepath = os.path.join(
@@ -386,140 +363,27 @@ def recommend_jobs():
 
         file.save(filepath)
 
-        # ====================================================
-        # EXTRACT RESUME
-        # ====================================================
+        # ================================================
+        # CENTRAL RECOMMENDATION ENGINE
+        # ================================================
 
-        resume_text = extract_text_from_pdf(
+        recommendations = match_resume_with_all_jobs(
             filepath
         )
 
-        resume_text = str(
-            resume_text
-        )
-
-        if not resume_text.strip():
-
-            flash(
-                "Unable to read the uploaded resume.",
-                "danger"
-            )
-
-            return redirect(
-                request.url
-            )
-
-        # ====================================================
-        # EXTRACT RESUME SKILLS ONCE
-        # ====================================================
-
-        resume_skills = extract_skills(
-            resume_text
-        )
-
-        print("\n========================================")
-        print("RESUME SKILLS")
-        print("========================================")
-        print(resume_skills)
-
-        # ====================================================
-        # LOAD ALL ACTIVE JOBS
-        # ====================================================
-
-        jobs = (
-            session.query(Job)
-            .filter(
-                Job.status == "active"
-            )
-            .all()
-        )
-
         print(
-            f"\nACTIVE JOBS: {len(jobs)}"
+            f"FINAL RECOMMENDATIONS: "
+            f"{len(recommendations)}"
         )
 
-        # ====================================================
-        # FAST MATCH ALL ACTIVE JOBS
-        # ====================================================
-
-        recommendations = []
-
-        for job in jobs:
-
-            # Skip completely empty jobs
-            if (
-                job.title is None
-                and job.description is None
-            ):
-                continue
-
-            try:
-
-                result = (
-                    fast_match_resume_with_job(
-                        resume_skills,
-                        job
-                    )
-                )
-
-                recommendations.append({
-
-                    "job": job,
-
-                    "result": result
-
-                })
-
-            except Exception as e:
-
-                print(
-                    f"Failed matching job "
-                    f"{job.id}: {e}"
-                )
-
-                continue
-
-        # ====================================================
-        # TOTAL JOBS COMPARED
-        # ====================================================
-
-        total_matches = len(
-            recommendations
-        )
-
-        print(
-            "\n========================================"
-        )
-
-        print(
-            "TOTAL JOBS COMPARED:",
-            total_matches
-        )
-
-        # ====================================================
-        # SORT ALL JOBS
-        # ====================================================
-
-        recommendations.sort(
-            key=lambda x: int(
-                x["result"].get(
-                    "score",
-                    0
-                )
-            ),
-            reverse=True
-        )
-
-        # ====================================================
-        # CALCULATE STATS BEFORE GEMINI
-        # ====================================================
+        # ================================================
+        # STATS
+        # ================================================
 
         best_match = (
-            int(
-                recommendations[0]["result"].get(
-                    "score",
-                    0
-                )
+            max(
+                int(item.get("score", 0))
+                for item in recommendations
             )
             if recommendations
             else 0
@@ -528,12 +392,7 @@ def recommend_jobs():
         average_match = (
             round(
                 sum(
-                    int(
-                        item["result"].get(
-                            "score",
-                            0
-                        )
-                    )
+                    int(item.get("score", 0))
                     for item in recommendations
                 )
                 / len(recommendations),
@@ -543,93 +402,27 @@ def recommend_jobs():
             else 0
         )
 
-        # ====================================================
-        # TOP 5 ONLY
-        # ====================================================
-
-        top_recommendations = (
-            recommendations[:5]
-        )
-
-        print(
-            "\n========================================"
-        )
-
-        print(
-            "TOP 5 MATCHES"
-        )
-
-        print(
-            "========================================"
-        )
-
-        for index, item in enumerate(
-            top_recommendations,
-            start=1
-        ):
-
-            print(
-                f"{index}. "
-                f"{item['job'].title} "
-                f"→ "
-                f"{item['result'].get('score', 0)}%"
-            )
-
-        # ====================================================
-        # GEMINI ANALYSIS — TOP 5 ONLY
-        # ====================================================
-
-        for item in top_recommendations:
-
-            try:
-
-                ai_result = (
-                    ai_match_resume_with_job(
-                        resume_text,
-                        item["job"]
-                    )
-                )
-
-                item["result"] = ai_result
-
-            except Exception as e:
-
-                print(
-                    f"Gemini failed for "
-                    f"{item['job'].title}: {e}"
-                )
-
-                # Keep rule-based result
-                # if Gemini fails
-
-        # ====================================================
-        # RENDER TOP 5
-        # ====================================================
+        # ================================================
+        # RENDER
+        # ================================================
 
         return render_template(
             "recommended_jobs.html",
 
-            recommendations=(
-                top_recommendations
+            recommendations=recommendations,
+
+            total_matches=len(
+                recommendations
             ),
 
-            total_matches=(
-                total_matches
-            ),
+            best_match=best_match,
 
-            best_match=(
-                best_match
-            ),
-
-            average_match=(
-                average_match
-            )
+            average_match=average_match
         )
 
     except Exception as e:
 
         import traceback
-
         traceback.print_exc()
 
         flash(
@@ -643,16 +436,11 @@ def recommend_jobs():
 
     finally:
 
-        session.close()
-
         if (
             filepath
             and os.path.exists(filepath)
         ):
-
             os.remove(filepath)
-
-
 
 @app.route("/recommendations")
 @login_required

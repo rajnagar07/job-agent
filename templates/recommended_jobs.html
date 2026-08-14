@@ -2,57 +2,496 @@
 {% block title %}Recommended jobs · AI Job Agent{% endblock %}
 
 {% block content %}
+
 <div class="container" style="padding-top:16px;padding-bottom:56px;">
 
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+  <!-- ========================================= -->
+  <!-- HEADER -->
+  <!-- ========================================= -->
+
+  <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:24px;
+  ">
+
     <div>
       <span class="eyebrow">AI RECOMMENDED JOBS</span>
-      <h1 style="font-size:1.7rem;margin-top:8px;">Recommended for your resume</h1>
+
+      <h1 style="font-size:1.7rem;margin-top:8px;">
+        Recommended for your resume
+      </h1>
+
+      <p style="
+          color:var(--ink-soft);
+          margin-top:6px;
+      ">
+        Jobs ranked using rule-based matching and AI analysis.
+      </p>
     </div>
-    <a href="{{ url_for('recommend_jobs') }}" class="btn btn-secondary">Analyze another resume</a>
+
+    <a
+      href="{{ url_for('recommend_jobs') }}"
+      class="btn btn-secondary"
+    >
+      Analyze another resume
+    </a>
+
   </div>
 
-  <div class="stat-row" style="grid-template-columns:repeat(2,1fr);">
-    <div class="stat"><div class="label">Top recommendations</div><div class="value">{{ total_matches }}</div></div>
-    <div class="stat"><div class="label">Best match</div><div class="value accent">{{ best_match }}%</div></div>
-        <div class="stat"><div class="label">Average Match</div><div class="value accent">{{ average_match }}%</div></div>
 
-    
+  <!-- ========================================= -->
+  <!-- STATS -->
+  <!-- ========================================= -->
+
+  <div
+    class="stat-row"
+    style="grid-template-columns:repeat(3,1fr);"
+  >
+
+    <div class="stat">
+
+      <div class="label">
+        Top recommendations
+      </div>
+
+      <div class="value">
+        {{ total_matches }}
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="label">
+        Best match
+      </div>
+
+      <div class="value accent">
+        {{ best_match }}%
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="label">
+        Average match
+      </div>
+
+      <div class="value accent">
+        {{ average_match }}%
+      </div>
+
+    </div>
+
   </div>
+
+
+  <!-- ========================================= -->
+  <!-- RECOMMENDATIONS -->
+  <!-- ========================================= -->
 
   {% if recommendations %}
+
   <div class="job-grid">
+
     {% for item in recommendations %}
+
     <div class="card card-hover job-card">
+
       <div class="card-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+
+
+        <!-- ===================================== -->
+        <!-- JOB HEADER -->
+        <!-- ===================================== -->
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:10px;
+        ">
+
           <div>
-            <div class="company">{{ item.job.company }}</div>
-            <h4 style="margin-top:2px;">{{ item.job.title }}</h4>
+
+            <div class="company">
+              {{ item.job.company }}
+            </div>
+
+            <h4 style="margin-top:2px;">
+              {{ item.job.title }}
+            </h4>
+
           </div>
-          <span class="tag tag-lg {% if item.result.score >= 80 %}tag-good{% elif item.result.score >= 60 %}tag-mid{% else %}tag-low{% endif %}">{{ item.result.score }}%</span>
+
+
+          <!-- FINAL SCORE -->
+
+          <span class="
+              tag
+              tag-lg
+              {% if item.score >= 80 %}
+                tag-good
+              {% elif item.score >= 60 %}
+                tag-mid
+              {% else %}
+                tag-low
+              {% endif %}
+          ">
+            {{ item.score }}%
+          </span>
+
         </div>
-        <div class="loc">{{ item.job.location }}</div>
+
+
+        <!-- ===================================== -->
+        <!-- LOCATION -->
+        <!-- ===================================== -->
+
+        <div class="loc">
+          {{ item.job.location }}
+        </div>
+
+
+        <!-- ===================================== -->
+        <!-- SALARY -->
+        <!-- ===================================== -->
+
         {% if item.job.salary and item.job.salary|string not in ['0','','None','N/A'] %}
-        <div style="font-size:.85rem;color:var(--ink-soft);margin-top:2px;">{{ item.job.salary }}</div>
+
+        <div style="
+            font-size:.85rem;
+            color:var(--ink-soft);
+            margin-top:2px;
+        ">
+          {{ item.job.salary }}
+        </div>
+
         {% endif %}
-        <span class="tag tag-source" style="margin-top:10px;">{{ item.result.method }}</span>
+
+
+        <!-- ===================================== -->
+        <!-- SCORE BREAKDOWN -->
+        <!-- ===================================== -->
+
+        <div style="
+            margin-top:16px;
+            padding:12px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            background:var(--surface-soft);
+        ">
+
+          <div style="
+              font-size:.75rem;
+              color:var(--ink-soft);
+              margin-bottom:8px;
+              text-transform:uppercase;
+              letter-spacing:.05em;
+          ">
+            Score breakdown
+          </div>
+
+
+          <div style="
+              display:grid;
+              grid-template-columns:repeat(3,1fr);
+              gap:8px;
+          ">
+
+            <div>
+              <div style="
+                  font-size:.72rem;
+                  color:var(--ink-soft);
+              ">
+                Final
+              </div>
+
+              <strong>
+                {{ item.score }}%
+              </strong>
+            </div>
+
+
+            <div>
+              <div style="
+                  font-size:.72rem;
+                  color:var(--ink-soft);
+              ">
+                AI
+              </div>
+              <strong>
+  {% if item.ai_score is not none %}
+    {{ item.ai_score }}%
+  {% else %}
+    N/A
+  {% endif %}
+</strong>
+            </div>
+
+
+            <div>
+              <div style="
+                  font-size:.72rem;
+                  color:var(--ink-soft);
+              ">
+                Rule
+              </div>
+
+              <strong>
+                {{ item.rule_score }}%
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ===================================== -->
+        <!-- VERDICT -->
+        <!-- ===================================== -->
+
+        {% if item.verdict %}
+
+        <div style="margin-top:12px;">
+
+          <span class="tag tag-source">
+            {{ item.verdict }}
+          </span>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================== -->
+        <!-- MATCHED SKILLS -->
+        <!-- ===================================== -->
+
+        {% if item.matched %}
+
+        <div style="margin-top:14px;">
+
+          <div style="
+              font-size:.78rem;
+              font-weight:600;
+              margin-bottom:6px;
+          ">
+            Matched skills
+          </div>
+
+          <div style="
+              display:flex;
+              flex-wrap:wrap;
+              gap:5px;
+          ">
+
+            {% for skill in item.matched[:8] %}
+
+            <span class="tag tag-good">
+              {{ skill }}
+            </span>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================== -->
+        <!-- MISSING SKILLS -->
+        <!-- ===================================== -->
+
+        {% if item.missing %}
+
+        <div style="margin-top:12px;">
+
+          <div style="
+              font-size:.78rem;
+              font-weight:600;
+              margin-bottom:6px;
+          ">
+            Missing skills
+          </div>
+
+          <div style="
+              display:flex;
+              flex-wrap:wrap;
+              gap:5px;
+          ">
+
+            {% for skill in item.missing[:6] %}
+
+            <span class="tag tag-low">
+              {{ skill }}
+            </span>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================== -->
+        <!-- STRENGTHS -->
+        <!-- ===================================== -->
+
+        {% if item.strengths %}
+
+        <div style="margin-top:14px;">
+
+          <div style="
+              font-size:.78rem;
+              font-weight:600;
+              margin-bottom:5px;
+          ">
+            Why this job matches
+          </div>
+
+          <ul style="
+              margin:0;
+              padding-left:18px;
+              color:var(--ink-soft);
+              font-size:.82rem;
+          ">
+
+            {% for strength in item.strengths[:3] %}
+
+            <li style="margin-bottom:3px;">
+              {{ strength }}
+            </li>
+
+            {% endfor %}
+
+          </ul>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================== -->
+        <!-- AI RECOMMENDATIONS -->
+        <!-- ===================================== -->
+
+        {% if item.recommendations %}
+
+        <div style="margin-top:14px;">
+
+          <div style="
+              font-size:.78rem;
+              font-weight:600;
+              margin-bottom:5px;
+          ">
+            AI recommendations
+          </div>
+
+          <ul style="
+              margin:0;
+              padding-left:18px;
+              color:var(--ink-soft);
+              font-size:.82rem;
+          ">
+
+            {% for recommendation in item.recommendations[:3] %}
+
+            <li style="margin-bottom:3px;">
+              {{ recommendation }}
+            </li>
+
+            {% endfor %}
+
+          </ul>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================== -->
+        <!-- METHOD -->
+        <!-- ===================================== -->
+
+        <span
+          class="tag tag-source"
+          style="margin-top:14px;"
+        >
+          AI + Rule Based
+        </span>
+
+
+        <!-- ===================================== -->
+        <!-- VIEW DETAILS -->
+        <!-- ===================================== -->
 
         <div class="actions">
-          <a href="{{ url_for('job_details', job_id=item.job.id) }}" class="btn btn-primary btn-block">View details</a>
+
+          <a
+            href="{{ url_for('job_details', job_id=item.job.id) }}"
+            class="btn btn-primary btn-block"
+          >
+            View details
+          </a>
+
         </div>
+
+
       </div>
+
     </div>
+
     {% endfor %}
+
   </div>
+
+
   {% else %}
+
+
+  <!-- ========================================= -->
+  <!-- EMPTY STATE -->
+  <!-- ========================================= -->
+
   <div class="empty-state">
-    <div class="icon">📭</div>
-    <h4>No recommendations yet</h4>
-    <p>Upload a resume and the agent will rank every job in the database against it.</p>
-    <a href="{{ url_for('recommend_jobs') }}" class="btn btn-primary">Find my best jobs</a>
+
+    <div class="icon">
+      📭
+    </div>
+
+    <h4>
+      No recommendations yet
+    </h4>
+
+    <p>
+      Upload a resume and the agent will rank jobs
+      against your skills and experience.
+    </p>
+
+    <a
+      href="{{ url_for('recommend_jobs') }}"
+      class="btn btn-primary"
+    >
+      Find my best jobs
+    </a>
+
   </div>
+
   {% endif %}
 
 </div>
+
 {% endblock %}
