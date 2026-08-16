@@ -21,6 +21,52 @@ from database.db import Base
 
 
 # ============================================================
+# Background Tasks
+# ============================================================
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    task_type = Column(
+        String(50),
+        nullable=False
+    )
+
+    status = Column(
+        String(20),
+        default="pending",
+        nullable=False
+    )
+
+    error = Column(
+        Text,
+        nullable=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    started_at = Column(
+        DateTime,
+        nullable=True
+    )
+
+    completed_at = Column(
+        DateTime,
+        nullable=True
+    )
+
+
+
+# ============================================================
 # User
 # ============================================================
 

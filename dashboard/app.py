@@ -22,6 +22,8 @@ from auth.decorators import login_required
 from database.models import User
 import logging
 import threading
+from database.db import engine
+from database.models import Base,Task
 
 
 logger = logging.getLogger(__name__)
@@ -485,37 +487,41 @@ def recommendation_details(job_id):
 # ===========================
 # Run Job Scraper
 # ===========================
-
 @app.route("/run-scraper")
 def run_scraper_route():
 
-    logger.info("=" * 60)
-    logger.info("SCRAPER STARTED")
-    logger.info("=" * 60)
+    session = SessionLocal()
 
     try:
 
-        jobs = run_job_collection()
+        task = Task(
+            task_type="job_scraper",
+            status="pending"
+        )
 
-        logger.info("=" * 60)
-        logger.info("SCRAPER FINISHED")
-        logger.info("TOTAL JOBS: %s", len(jobs))
-        logger.info("=" * 60)
+        session.add(task)
+        session.commit()
 
-        return f"""
-        <h2>Scraper completed successfully.</h2>
-        <p>Total jobs collected: {len(jobs)}</p>
-        <p><a href="/jobs">Go to Jobs Dashboard</a></p>
-        """
+        return {
+            "status": "queued",
+            "task_id": task.id
+        }, 202
 
-    except Exception as e:
+    except Exception:
 
-        logger.exception("SCRAPER FAILED")
+        session.rollback()
 
-        return f"""
-        <h2>Scraper failed.</h2>
-        <pre>{e}</pre>
-        """, 500
+        logger.exception(
+            "Failed to queue scraper task"
+        )
+
+        return {
+            "status": "error"
+        }, 500
+
+    finally:
+
+        session.close()
         
 @app.route("/health")
 def health():
