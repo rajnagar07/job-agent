@@ -1,4 +1,3 @@
-import time
 import traceback
 from datetime import datetime
 
@@ -76,26 +75,27 @@ def process_tasks():
         session.close()
 
 
+
 if __name__ == "__main__":
 
     print("Background worker started.")
 
-    while True:
+    try:
 
-        try:
+        processed = process_tasks()
 
-            processed = process_tasks()
+        if processed:
+            print("Task processing finished.")
 
-            if not processed:
+        else:
+            print("No pending tasks found.")
 
-                time.sleep(5)
+    except Exception as e:
 
-        except Exception as e:
+        print(
+            f"Worker error: {e}"
+        )
 
-            print(
-                f"Worker error: {e}"
-            )
+        traceback.print_exc()
 
-            traceback.print_exc()
-
-            time.sleep(5)
+        raise
