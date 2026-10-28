@@ -39,11 +39,9 @@ from auth.email_service import (
 # =====================================================
 
 def register_user(name, email, phone, password):
-
     session = SessionLocal()
 
     try:
-
         # Clean input
         name = (name or "").strip()
         email = (email or "").strip().lower()
@@ -70,7 +68,6 @@ def register_user(name, email, phone, password):
                 .filter_by(email=email)
                 .first()
             )
-
             if existing:
                 return False, "Email is already registered."
 
@@ -81,7 +78,6 @@ def register_user(name, email, phone, password):
                 .filter_by(phone=phone)
                 .first()
             )
-
             if existing:
                 return False, "Phone number is already registered."
 
@@ -90,39 +86,26 @@ def register_user(name, email, phone, password):
             name=name,
             email=email if email else None,
             phone=phone if phone else None,
-            email_verified=True  # this will be change after purchasing the domain
-
+            email_verified=True
         )
 
         user.set_password(password)
 
         session.add(user)
         session.commit()
-        
-        session.refresh(user)
-        # this is for production receving the email from the resend email
-        # verification_token = create_token(
-        #     user.id,
-        #     VERIFY_EMAIL
-        # )
 
-        # send_verification_email(
-        #     user,
-        #     verification_token
-        # )
+        return True, "Registration successful. You can now log in."
 
-        # return True, (
-        #     "Registration successful. "
-        #     "Please check your email to verify your account."
-        # )
-    except Exception as e:
+    except Exception:
+        session.rollback()
 
-            session.rollback()
+        import traceback
+        traceback.print_exc()
 
-            import traceback
-            traceback.print_exc()
+        return False, "Registration failed due to a server error."
 
-            return False, f"Registration Error: {e}"
+    finally:
+        session.close()
 
 # =====================================================
 # Login User
