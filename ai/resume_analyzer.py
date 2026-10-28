@@ -1,93 +1,64 @@
-# import json
-
-# from ai.chatmodel import chat_model
-# from ai.prompts import resume_analysis_prompt
-
-
-# def analyze_resume_with_ai(resume_text):
-
-#     try:
-
-#         chain = resume_analysis_prompt | chat_model
-
-#         response = chain.invoke({
-#             "resume": resume_text
-#         })
-
-#         if isinstance(response.content, list):
-#             content = response.content[0]["text"]
-#         else:
-#             content = response.content
-
-#         content = content.strip()
-#         # Remove ```json ... ```
-#         content = (
-#             content.replace("```json", "")
-#                    .replace("```", "")
-#                    .strip()
-#         )
-
-#         return json.loads(content)
-
-#     except Exception as e:
-#         print(type(response))
-#         print(type(response.content))
-#         print(response.content)
-
-#         return {
-#             "ats_score": 0,
-#             "resume_score": 0,
-#             "verdict": "Analysis Failed",
-#             "summary": "Unable to analyze resume.",
-#             "skills": [],
-#             "strengths": [],
-#             "weaknesses": [str(e)],
-#             "recommendations": [],
-#             "recommended_roles": []
-#         }
 
 import json
+import time
+import logging
 
 from ai.chatmodel import chat_model
 from ai.prompts import resume_analysis_prompt
 
+logger = logging.getLogger(__name__)
+
 
 def analyze_resume_with_ai(resume_text):
+    start_time = time.perf_counter()
 
     try:
-
         chain = resume_analysis_prompt | chat_model
+
+        logger.info("Resume analysis: starting Gemini request")
 
         response = chain.invoke({
             "resume": resume_text
         })
 
-        if isinstance(response.content, list):
-
-            content = ""
-
-            for block in response.content:
-                if isinstance(block, dict) and block.get("type") == "text":
-                    content += block["text"]
-
-        else:
-
-            content = response.content
-
-        content = (
-            content.replace("```json", "")
-                   .replace("```", "")
-                   .strip()
+        logger.info(
+            "Resume analysis: Gemini responded in %.2f seconds",
+            time.perf_counter() - start_time
         )
 
-        return json.loads(content)
+        if isinstance(response.content, list):
+            content = "".join(
+                block.get("text", "")
+                for block in response.content
+                if isinstance(block, dict)
+                and block.get("type") == "text"
+            )
+        else:
+            content = response.content
 
-    except Exception as e:
+        content = content.strip()
 
-        # print("=" * 60)
-        # print("RESUME ANALYZER ERROR")
-        # print(e)
-        # print("=" * 60)
+        if content.startswith("```"):
+            content = (
+                content.replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+
+        result = json.loads(content)
+
+        logger.info(
+            "Resume analysis completed in %.2f seconds",
+            time.perf_counter() - start_time
+        )
+
+        return result
+
+    except Exception:
+        logger.exception(
+            "Resume analysis failed after %.2f seconds",
+            time.perf_counter() - start_time
+        )
 
         return {
             "ats_score": 0,
@@ -96,7 +67,9 @@ def analyze_resume_with_ai(resume_text):
             "summary": "Unable to analyze resume.",
             "skills": [],
             "strengths": [],
-            "weaknesses": [str(e)],
+            "weaknesses": [
+                "Resume analysis failed. Please try again."
+            ],
             "recommendations": [],
             "recommended_roles": []
         }

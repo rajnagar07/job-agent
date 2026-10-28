@@ -79,250 +79,159 @@ def fast_match_resume_with_job(
 # SINGLE JOB - AI MATCH FROM ALREADY EXTRACTED RESUME
 # ============================================================
 
-def ai_match_resume_with_job(
-    resume_text,
-    job
-):
+def ai_match_resume_with_job(resume_text, job):
+    if not resume_text or not resume_text.strip():
+        raise ValueError("Resume text is empty.")
+
+    if not job:
+        raise ValueError("Job information is missing.")
 
     job_text = f"""
-Job Title: {job.title}
-
-Company: {job.company}
-
-Location: {job.location}
-
-Experience: {job.experience}
-
-Salary: {job.salary}
+Job Title: {job.title or "Not specified"}
+Company: {job.company or "Not specified"}
+Location: {job.location or "Not specified"}
+Experience: {job.experience or "Not specified"}
+Salary: {job.salary or "Not specified"}
 
 Description:
-{job.description or ""}
+{job.description or "No description provided."}
 """
 
-    result = match_resume_with_ai(
-        resume_text,
-        job_text
-    )
+    try:
+        result = match_resume_with_ai(
+            resume_text,
+            job_text
+        )
 
-    result["method"] = "AI"
+        if not isinstance(result, dict):
+            raise ValueError("AI returned an invalid response.")
 
-    return result
+        result["method"] = "AI"
+        return result
+
+    except Exception:
+        logger.exception(
+            "AI matching failed for job ID %s",
+            getattr(job, "id", "unknown")
+        )
+        raise
+
 
 
 # ============================================================
 # MATCH RESUME AGAINST ALL ACTIVE JOBS
 # ============================================================
 
-def match_resume_with_all_jobs(
-    resume_path
-):
 
+def match_resume_with_all_jobs(resume_path):
     session = SessionLocal()
 
     try:
+        # Step 1: Extract resume once
+        resume_text = extract_resume_text(resume_path)
 
-        # ====================================================
-        # STEP 1
-        # Extract resume ONCE
-        # ====================================================
+        # Step 2: Extract resume skills once
+        resume_skills = extract_skills(resume_text)
 
-        resume_text = extract_resume_text(
-            resume_path
-        )
+        print("\nRESUME SKILLS:", resume_skills)
 
-        # ====================================================
-        # STEP 2
-        # Extract resume skills ONCE
-        # ====================================================
-
-        resume_skills = extract_skills(
-            resume_text
-        )
-
-        print("\n========================================")
-        print("RESUME SKILLS")
-        print("========================================")
-        print(resume_skills)
-
-        # ====================================================
-        # STEP 3
-        # Get ACTIVE jobs only
-        # ====================================================
-
+        # Step 3: Fetch active jobs
         jobs = (
             session.query(Job)
-            .filter(
-                Job.status == "active"
-            )
+            .filter(Job.status == "active")
             .all()
         )
 
-        print(
-            f"\nActive Jobs: {len(jobs)}"
-        )
+        print(f"Active Jobs: {len(jobs)}")
 
-        # ====================================================
-        # STEP 4
-        # Fast match ALL jobs (rule score + filter score blend)
-        # ====================================================
-
+        # Step 4: Rule-based matching
         recommendations = []
 
         for job in jobs:
-
             try:
-
-                result = (
-                    fast_match_resume_with_job(
-                        resume_skills,
-                        job
-                    )
+                result = fast_match_resume_with_job(
+                    resume_skills,
+                    job
                 )
 
-                resume_score = int(
-                    result.get(
-                        "score",
-                        0
-                    )
-                )
-
-                filter_score = int(
-                    job.filter_score or 0
-                )
+                resume_score = int(result.get("score", 0))
+                filter_score = int(job.filter_score or 0)
 
                 final_score = round(
-                    (resume_score * 0.8) +
-                    (filter_score * 0.2)
+                    resume_score * 0.8 + filter_score * 0.2
                 )
 
                 recommendations.append({
-
                     "job": job,
-
                     "score": final_score,
-
                     "resume_score": resume_score,
-
                     "filter_score": filter_score,
-
-                    "matched": result.get(
-                        "matched",
-                        []
-                    ),
-
-                    "missing": result.get(
-                        "missing",
-                        []
-                    ),
-
+                    "matched": result.get("matched", []),
+                    "missing": result.get("missing", []),
                     "method": "Rule Based",
-
+                    "ai_score": None,
+                    "rule_score": final_score,
                 })
 
             except Exception as e:
+                print(f"Failed matching job {job.id}: {e}")
 
-                print(
-                    f"Failed matching job "
-                    f"{job.id}: {e}"
-                )
-
-                continue
-
-        # ====================================================
-        # STEP 5
-        # Sort ALL jobs
-        # ====================================================
-
+        # Step 5: Sort and filter candidates
         recommendations.sort(
-            key=lambda x: x["score"],
+            key=lambda item: item["score"],
             reverse=True
         )
 
-        print(
-            "\n========================================"
-        )
+        print("TOTAL JOBS COMPARED:", len(recommendations))
 
-        print(
-            "TOTAL JOBS COMPARED:",
-            len(recommendations)
-        )
+        candidates = [
+            item for item in recommendations
+            if item["score"] >= 40
+        ][:5]
 
-        # ====================================================
-        # STEP 6
-        # Filter weak matches, take Top 20
-        # ====================================================
-        recommendations = [
-                item
-                for item in recommendations
-                if item["score"] >= 40
-        ]
-        top_20 = recommendations[:5]
+        print(f"Candidates sent to Gemini: {len(candidates)}")
 
-        print(
-            "TOP 20 CANDIDATES → SENDING TO GEMINI"
-        )
+        if not candidates:
+            return []
 
-        print(
-            "========================================"
-        )
-
-        for index, item in enumerate(
-            top_20,
-            start=1
-        ):
-
-            print(
-                f"{index}. "
-                f"{item['job'].title} "
-                f"→ {item['score']}%"
+        # Step 6: AI reranking with a safe fallback
+        try:
+            ai_results = ai_rerank_recommendations(
+                resume_text,
+                candidates
             )
 
-        # ====================================================
-        # STEP 7
-        # AI re-rank Top 20 with Gemini, return Top 20
-        # ====================================================
+            if ai_results:
+                results = ai_results
+            else:
+                results = candidates
 
-        ai_results = ai_rerank_recommendations(
-            resume_text,
-            top_20
-        )
-        print("\n========================================")
-        print("FINAL AI RESULTS")
-        print("========================================")
+        except Exception as e:
+            print(f"AI reranking failed; using rule-based results: {e}")
+            results = candidates
 
-        for item in ai_results[:3]:
+        # Step 7: Ensure fallback results have consistent fields
+        for item in results:
+            item.setdefault("ai_score", None)
+            item.setdefault("rule_score", item.get("score", 0))
+            item.setdefault("method", "Rule Based")
 
+        print("FINAL RECOMMENDATIONS:", len(results))
+
+        for item in results[:3]:
             print(
-                "JOB:",
-                item["job"].title
+                f"{item['job'].title} | "
+                f"Final: {item.get('score')} | "
+                f"AI: {item.get('ai_score')} | "
+                f"Rule: {item.get('rule_score')} | "
+                f"Method: {item.get('method')}"
             )
 
-            print(
-                "FINAL SCORE:",
-                item.get("score")
-            )
-
-            print(
-                "AI SCORE:",
-                item.get("ai_score")
-            )
-
-            print(
-                "RULE SCORE:",
-                item.get("rule_score")
-            )
-
-            print(
-                "METHOD:",
-                item.get("method")
-            )
-
-            print("----------------------------------------")
-            return ai_results
+        return results
 
     finally:
-
         session.close()
+
 # ============================================================
 # LEGACY FUNCTION
 # ============================================================
