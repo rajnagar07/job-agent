@@ -355,7 +355,7 @@ logger = logging.getLogger(__name__)
 def ai_rerank_recommendations(resume_text, recommendations):
 
     ai_recommendations = []
-    top_candidates = recommendations[:5]
+    top_candidates = recommendations[:1]
 
     for item in top_candidates:
         job = item["job"]
