@@ -345,199 +345,82 @@ def match_resume_with_all_jobs_and_save(resume_path):
 
         session.close()
         
-def ai_rerank_recommendations(
-    resume_text,
-    recommendations
-):
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def ai_rerank_recommendations(resume_text, recommendations):
 
     ai_recommendations = []
-
-    # Only send Top 20 to Gemini
     top_candidates = recommendations[:5]
 
     for item in top_candidates:
-
         job = item["job"]
+        rule_score = int(item.get("score", 0))
 
         try:
-
-            # =========================================
-            # GEMINI ANALYSIS
-            # =========================================
-
             result = ai_match_resume_with_job(
                 resume_text,
                 job
             )
 
-            # =========================================
-            # AI SCORE
-            # =========================================
-
-            ai_score = int(
-                result.get(
-                    "score",
-                    0
-                )
+            ai_score = max(
+                0,
+                min(100, int(result.get("score", 0)))
             )
-
-            # =========================================
-            # RULE-BASED SCORE
-            # =========================================
-
-            rule_score = int(
-                item.get(
-                    "score",
-                    0
-                )
-            )
-
-            # =========================================
-            # FINAL SCORE
-            # =========================================
 
             final_score = round(
                 (rule_score * 0.4) +
                 (ai_score * 0.6)
             )
 
-            # =========================================
-            # SAVE AI RESULT
-            # =========================================
-
             ai_recommendations.append({
-
                 "job": job,
-
                 "score": final_score,
-
                 "ai_score": ai_score,
-
                 "rule_score": rule_score,
-
-                "resume_score": item.get(
-                    "resume_score",
-                    0
-                ),
-
-                "filter_score": item.get(
-                    "filter_score",
-                    0
-                ),
-
-                "matched": result.get(
-                    "matched",
-                    []
-                ),
-
-                "missing": result.get(
-                    "missing",
-                    []
-                ),
-
-                "strengths": result.get(
-                    "strengths",
-                    []
-                ),
-
-                "recommendations": result.get(
-                    "recommendations",
-                    []
-                ),
-
-                "resume_summary": result.get(
-                    "resume_summary",
-                    ""
-                ),
-
-                "job_summary": result.get(
-                    "job_summary",
-                    ""
-                ),
-
-                "verdict": result.get(
-                    "verdict",
-                    ""
-                ),
-
+                "resume_score": item.get("resume_score", 0),
+                "filter_score": item.get("filter_score", 0),
+                "matched": result.get("matched", []),
+                "missing": result.get("missing", []),
+                "strengths": result.get("strengths", []),
+                "recommendations": result.get("recommendations", []),
+                "resume_summary": result.get("resume_summary", ""),
+                "job_summary": result.get("job_summary", ""),
+                "verdict": result.get("verdict", ""),
                 "method": "AI",
-
             })
 
-        except Exception as e:
-
-            print(
-                f"AI matching failed for "
-                f"job {job.id}: {e}"
+        except Exception:
+            logger.exception(
+                "AI matching failed for job ID %s",
+                getattr(job, "id", "unknown")
             )
 
-            # =========================================
-            # GEMINI FAILED
-            # Keep Rule-Based Result
-            # =========================================
-
-            rule_score = int(
-                item.get(
-                    "score",
-                    0
-                )
-            )
-
+            # Preserve the rule-based recommendation.
             ai_recommendations.append({
-
                 "job": job,
-
                 "score": rule_score,
-
                 "ai_score": None,
-
                 "rule_score": rule_score,
-
-                "resume_score": item.get(
-                    "resume_score",
-                    0
-                ),
-
-                "filter_score": item.get(
-                    "filter_score",
-                    0
-                ),
-
-                "matched": item.get(
-                    "matched",
-                    []
-                ),
-
-                "missing": item.get(
-                    "missing",
-                    []
-                ),
-
+                "resume_score": item.get("resume_score", 0),
+                "filter_score": item.get("filter_score", 0),
+                "matched": item.get("matched", []),
+                "missing": item.get("missing", []),
                 "strengths": [],
-
                 "recommendations": [],
-
                 "resume_summary": "",
-
                 "job_summary": "",
-
                 "verdict": "Rule Based Only",
-
                 "method": "Rule Based",
-
             })
-
-    # =========================================
-    # SORT BY FINAL SCORE
-    # =========================================
 
     ai_recommendations.sort(
-        key=lambda x: x["score"],
+        key=lambda item: item["score"],
         reverse=True
     )
-
-    # =========================================
-    # RETURN TOP 20
-    # =========================================
 
     return ai_recommendations[:5]

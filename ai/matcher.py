@@ -1,3 +1,4 @@
+
 import json
 import time
 import logging
@@ -33,6 +34,7 @@ def match_resume_with_ai(resume_text, job_description):
 
             content = content.strip()
 
+            # Remove Markdown code fences
             if content.startswith("```"):
                 content = (
                     content.replace("```json", "")
@@ -40,11 +42,31 @@ def match_resume_with_ai(resume_text, job_description):
                     .strip()
                 )
 
+            # Parse JSON
             result = json.loads(content)
 
             if not isinstance(result, dict):
-                raise ValueError("Gemini response must be a JSON object.")
+                raise ValueError(
+                    "Gemini response must be a JSON object."
+                )
 
+            # Validate and normalize score
+            score = result.get("score")
+
+            if (
+                not isinstance(score, (int, float))
+                or isinstance(score, bool)
+            ):
+                raise ValueError(
+                    "Gemini returned an invalid score."
+                )
+
+            result["score"] = max(
+                0,
+                min(100, round(score))
+            )
+
+            # Validate required fields
             required_keys = {
                 "score",
                 "matched",
@@ -81,7 +103,6 @@ def match_resume_with_ai(resume_text, job_description):
 
 
 def calculate_match_score(resume_skills, job_skills):
-    # Normalize skills
     resume = {
         skill.strip().lower()
         for skill in resume_skills
