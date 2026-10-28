@@ -16,7 +16,7 @@ primary_model = ChatGoogleGenerativeAI(
 )
 
 fallback_model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     google_api_key=GOOGLE_API_KEY,
     temperature=0.3,
     timeout=20,
